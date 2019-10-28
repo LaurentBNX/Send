@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">TestSend</string>
+    <string name="company_name">DENTASOFT</string>
+    <string name="banner_message">Pourquoi nous choisir pour votre futur logiciel?</string>
+
+    <string name="happy_customer"></string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
