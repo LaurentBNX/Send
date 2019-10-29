@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+    <TextView
+        android:text="@string/general"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="20dp"
+        android:id="@+id/textView"/>
+
+
+
+    <Switch
+        android:text="Send SMS Automatically"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:id="@+id/language_switch"/>
+    <TextView
+        android:text="Select Language:"
+        android:layout_width="match_parent"
+        android:layout_height="52dp" android:id="@+id/textLanguage"/>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/rg_button">
+
+        <RadioButton
+            android:id="@+id/French_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="French" />
+
+        <RadioButton
+            android:id="@+id/Dutch_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Dutch" />
+        <RadioButton
+            android:id="@+id/English_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="English" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/line"
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:paddingTop="5dip"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#000" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/save_setting_button"
+        android:text="@string/save"
+        android:gravity="center_horizontal"/>
+
+</LinearLayout>
