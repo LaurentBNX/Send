@@ -1,7 +1,6 @@
 package com.dentasoft.testsend;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -14,14 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link CustomerInfoFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link CustomerInfoFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class CustomerInfoFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,11 +34,11 @@ public class CustomerInfoFragment extends Fragment {
     }
 
 
-    public static CustomerInfoFragment newInstance(int img_src, int txt_val,int txt_def) {
+    public static CustomerInfoFragment newInstance(int img_src, int txt_def) {
         CustomerInfoFragment fragment = new CustomerInfoFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_IMG_SRC, img_src);
-        args.putInt(ARG_TXT_VAL, txt_val);
+       // args.putInt(ARG_TXT_VAL,);
         args.putInt(ARG_TXT_DEF,txt_def);
         fragment.setArguments(args);
         return fragment;
@@ -57,7 +49,7 @@ public class CustomerInfoFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             image_source = getArguments().getInt(ARG_IMG_SRC);
-            text_value = getArguments().getInt(ARG_TXT_VAL);
+          //  text_value = getArguments().getInt(ARG_TXT_VAL);
             text_definition = getArguments().getInt(ARG_TXT_DEF);
         }
     }
@@ -66,9 +58,15 @@ public class CustomerInfoFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_customer_info, container, false);
-        ImageView tv = v.findViewById(R.id.about_img_src);
-        tv.setImageResource(image_source);
+        View v = inflater.inflate(R.layout.fragment_about_fragment_customer_info, container, false);
+
+        ImageView img = v.findViewById(R.id.about_img_src);
+        TextView txt_val = v.findViewById(R.id.about_txt_value);
+        TextView txt_def = v.findViewById(R.id.about_txt_definition);
+
+        img.setImageResource(image_source);
+        txt_def.setText(text_definition);
+        txt_val.setText("95");
         return v;
     }
 
@@ -96,16 +94,6 @@ public class CustomerInfoFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
