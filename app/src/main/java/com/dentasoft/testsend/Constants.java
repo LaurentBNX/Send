@@ -7,4 +7,7 @@ public class Constants {
             {R.drawable.ic_computer,R.string.project_in_dev}
 
     };
+            public static final String IP = "193.70.45.74";
+            public static final String userName = "sms@soft4all.be";
+            public static final String passWord = "@P_r6CZ#SQ*d";
 }
