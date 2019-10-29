@@ -16,18 +16,23 @@
                   android:layout_height="wrap_content"
                   android:text="Setting"
                   android:textSize="25dp"
-                  android:gravity="center_horizontal">
+                  android:textStyle="bold">
 
         </TextView>
     </androidx.appcompat.widget.Toolbar>
 
+
+
     <TextView
-            android:text="General"
-            android:layout_width="wrap_content"
+            android:text="@string/general"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:textSize="20dp"
             android:id="@+id/textView"/>
+
+
+
     <Switch
             android:text="Send SMS Automatically"
             android:layout_width="match_parent"
@@ -40,8 +45,10 @@
 
     <RadioGroup
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/rg_button">
+
         <RadioButton
                 android:id="@+id/French_button"
                 android:layout_width="0dp"
@@ -63,4 +70,21 @@
                 android:layout_height="wrap_content"
                 android:text="English" />
     </RadioGroup>
+
+    <TextView
+            android:id="@+id/line"
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:paddingTop="5dip"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000" />
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/save_setting_button"
+            android:text="@string/save"
+            android:gravity="center_horizontal"/>
+
 </LinearLayout>
