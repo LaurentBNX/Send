@@ -17,7 +17,7 @@ public class AboutActivity extends AppCompatActivity implements CustomerInfoFrag
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setId(R.id.about_fragment_holder_customer_info);
 
-        getSupportFragmentManager().beginTransaction().add(ll.getId(),CustomerInfoFragment.newInstance("tt","ttt")).commit();
+        getSupportFragmentManager().beginTransaction().add(ll.getId(),CustomerInfoFragment.newInstance(1,2,3)).commit();
         customer_info.addView(ll);
     }
 
