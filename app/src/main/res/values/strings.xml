@@ -36,5 +36,8 @@
 
     <string name="general">General</string>
     <string name="save">Save</string>
+    <string name="my_account_txt_identifier">Your identifier:</string>
+    <string name="quit">Quit</string>
+    <string name="send_sms">Send SMS</string>
 
 </resources>
