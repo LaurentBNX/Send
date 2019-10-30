@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        drawer.closeDrawer(GravityCompat.START);
+
         switch(menuItem.getItemId()) {
             case R.id.nav_home:
                 break;
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_my_account:
                 break;
         }
-        drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 

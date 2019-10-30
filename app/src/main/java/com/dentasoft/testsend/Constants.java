@@ -10,4 +10,9 @@ public class Constants {
             public static final String IP = "193.70.45.74";
             public static final String userName = "sms@soft4all.be";
             public static final String passWord = "@P_r6CZ#SQ*d";
+
+            public static String FtpContent = "";
+            public static final String FIRST_COLUMN = "NUMBER";
+            public static final String SECOND_COLUMN = "SMS CONTENT";
+
 }
