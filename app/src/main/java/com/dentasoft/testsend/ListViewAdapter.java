@@ -56,10 +56,16 @@ public class ListViewAdapter extends BaseAdapter {
             holder.ph_number = (TextView) convertView.findViewById(R.id.FirstText);
             holder.sms_content = (TextView) convertView.findViewById(R.id.SecondText);
             convertView.setTag(holder);
+
         }
         else
         {
             holder = (ViewHolder) convertView.getTag();
+        }
+        if (position % 2 == 0) {
+            convertView.setBackgroundColor(convertView.getResources().getColor(R.color.beige,null));
+        } else {
+            convertView.setBackgroundColor(convertView.getResources().getColor(R.color.white,null));
         }
 
         holder.ph_number.setText(sendNumber.get(position));
