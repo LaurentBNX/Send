@@ -33,7 +33,7 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home,container,false);
     getActivity().setTitle("Home");
-   // InitSliderImages(v);
+    //InitSliderImages(v);
         return v;
     }
 
@@ -44,13 +44,17 @@ public class HomeFragment extends Fragment {
                     FtpService ftp = new FtpService(v,Constants.IP);
                     try {
                             slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide1.png"));
+                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide2.png"));
+                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide3.png"));
+                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide4.png"));
+                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide5.png"));
                     } catch (IOException e) {
                         e.printStackTrace();}
 
                 }
         ).start();
-
-        Constants.slider_images = slider_images.toArray(new Bitmap[3]);
+        while (slider_images.size() < 5) {}
+        Constants.slider_images = slider_images.toArray(new Bitmap[5]);
         ImageAdapter adapter = new ImageAdapter(v.getContext(),Constants.slider_images);
         ViewPager pager = v.findViewById(R.id.home_viewpager);
         pager.setAdapter(adapter);
