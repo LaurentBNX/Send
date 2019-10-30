@@ -40,6 +40,7 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        getActivity().setTitle("Settings");
         View v = inflater.inflate(R.layout.fragment_settings, container, false);
         autoSend = (Switch)v.findViewById(R.id.language_switch);
         french_button = (RadioButton) v.findViewById(R.id.French_button);
