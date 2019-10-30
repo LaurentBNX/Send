@@ -59,13 +59,13 @@ public class HistoryFragment extends Fragment {
                     try {
                       //  InitFTPServerSetting(v);
                         FtpService service = new FtpService(v,Constants.IP);
-                        service.fetchText("/test","msg_LOG.txt");
+                        Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }.start();
-        while (Constants.FtpContent == ""){}
+        while (Constants.FtpContent.equals("")){}
 
 
 

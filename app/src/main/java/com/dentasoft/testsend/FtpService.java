@@ -35,7 +35,7 @@ public class FtpService {
         this.password = Constants.passWord;
     }
 
-    public void fetchText(String filePath, String fileName) throws IOException {
+    public String fetchText(String filePath, String fileName) throws IOException {
         String fullFileName = filePath + "/" +fileName;
         FTPClient client = new FTPClient();
         try {
@@ -84,7 +84,7 @@ public class FtpService {
         }
 
         String content = new String(fileContent);
-        Constants.fetched = content;
+        return content;
 
 
 
