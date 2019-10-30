@@ -2,20 +2,21 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="150dp"
     tools:context=".CustomerInfoFragment">
 
     <!-- TODO: Update blank fragment layout -->
    <LinearLayout
        android:layout_width="match_parent"
-       android:layout_height="wrap_content"
+       android:layout_height="match_parent"
        android:orientation="vertical"
+       android:weightSum="4"
        >
        <ImageView
            android:layout_width="match_parent"
-           android:layout_height="match_parent"
+           android:layout_height="wrap_content"
            android:textAlignment="center"
-
+           android:layout_weight="2"
            android:id="@+id/about_img_src"/>
        <TextView
            android:layout_width="match_parent"
@@ -23,12 +24,14 @@
            android:textAlignment="center"
            android:textStyle="bold"
            android:id="@+id/about_txt_value"
+           android:layout_weight="1"
            />
        <TextView
            android:layout_width="match_parent"
            android:layout_height="wrap_content"
            android:textAlignment="center"
            android:id="@+id/about_txt_definition"
+           android:layout_weight="1"
            />
    </LinearLayout>
 
