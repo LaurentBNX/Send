@@ -8,5 +8,6 @@
     <color name="black_trans">#7F000000</color>
 
     <color name="white">#FFFFFF</color>
+    <color name="alternate_row">#E1C699</color>
 
 </resources>

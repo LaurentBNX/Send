@@ -17,13 +17,14 @@ import java.net.SocketException;
 import java.util.*;
 
 
+import com.dentasoft.testsend.adapters.ListViewAdapter;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 
 public class HistoryFragment extends Fragment {
-  //  private ArrayList<HashMap> list;
-   // list = new ArrayList<HashMap>();
+    //  private ArrayList<HashMap> list;
+    // list = new ArrayList<HashMap>();
     private ListView smsView;
     private TextView outPut;
     public int i = 0;
@@ -50,29 +51,29 @@ public class HistoryFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_history, container, false);
         smsView = v.findViewById(R.id.smsListView);
 
-       // outPut = v.findViewById(R.id.output);
+        // outPut = v.findViewById(R.id.output);
         //populateList();
 
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                      //  InitFTPServerSetting(v);
-                        FtpService service = new FtpService(v,Constants.IP);
-                        Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    //  InitFTPServerSetting(v);
+                    FtpService service = new FtpService(v,Constants.IP);
+                    Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }.start();
+            }
+        }.start();
         while (Constants.FtpContent.equals("")){}
 
 
 
         Scanner data = new Scanner(Constants.FtpContent);
-       // list = new ArrayList<HashMap>();
+        // list = new ArrayList<HashMap>();
         while (data.hasNextLine()) {
-           // HashMap temp = new HashMap();
+            // HashMap temp = new HashMap();
             String line = data.nextLine();
             String[] seperated = line.split("\\|");
             Date currentTime = Calendar.getInstance().getTime();
@@ -81,15 +82,15 @@ public class HistoryFragment extends Fragment {
             sendMessage.add(seperated[1]);
 
             //sendTime[i] = String.valueOf(currentTime);
-           // sendNumber[i] = seperated[0];
+            // sendNumber[i] = seperated[0];
             //sendMessage[i] = seperated[1];
             System.out.println("Target phone number:   " + sendNumber.get(i));
             System.out.println("Content to be sent:   " + sendMessage.get(i));
             System.out.println("Send time:   " + sendTime.get(i));
 
             //temp.put(Constants.FIRST_COLUMN,seperated[0]);
-        //    temp.put(Constants.SECOND_COLUMN,seperated[1]);
-          //  list.add(temp);
+            //    temp.put(Constants.SECOND_COLUMN,seperated[1]);
+            //  list.add(temp);
             //System.out.println("List :  " + temp.get(Constants.FIRST_COLUMN));
         }
 
@@ -97,7 +98,7 @@ public class HistoryFragment extends Fragment {
         ListViewAdapter adapter = new ListViewAdapter(getContext(),sendNumber,sendMessage);
 
         smsView.setAdapter(adapter);
-       // outPut.setText(Constants.FtpContent);
+        // outPut.setText(Constants.FtpContent);
         //outPut.setMovementMethod(new ScrollingMovementMethod());
         return v;
     }

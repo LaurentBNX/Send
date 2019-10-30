@@ -5,19 +5,19 @@
               android:layout_height="match_parent">
 
     <TextView
-            android:id="@+id/FirstText"
+            android:id="@+id/number_view"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Number"
             android:layout_gravity="left"
-            />
+    />
 
     <TextView
-            android:id="@+id/SecondText"
+            android:id="@+id/content_view"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Content"
             android:layout_gravity="right"
-             />
+    />
 
 </LinearLayout>

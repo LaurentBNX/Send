@@ -1,4 +1,4 @@
-package com.dentasoft.testsend;
+package com.dentasoft.testsend.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+import com.dentasoft.testsend.R;
+
 import java.util.ArrayList;
 
 public class ListViewAdapter extends BaseAdapter {
@@ -53,13 +55,19 @@ public class ListViewAdapter extends BaseAdapter {
         if(convertView == null) {
             convertView = inflater.inflate(R.layout.list_view_row, null);
             holder = new ViewHolder();
-            holder.ph_number = (TextView) convertView.findViewById(R.id.FirstText);
-            holder.sms_content = (TextView) convertView.findViewById(R.id.SecondText);
+            holder.ph_number = (TextView) convertView.findViewById(R.id.number_view);
+            holder.sms_content = (TextView) convertView.findViewById(R.id.content_view);
             convertView.setTag(holder);
+
         }
         else
         {
             holder = (ViewHolder) convertView.getTag();
+        }
+        if (position % 2 == 0) {
+            convertView.setBackgroundColor(convertView.getResources().getColor(R.color.alternate_row,null));
+        } else {
+            convertView.setBackgroundColor(convertView.getResources().getColor(R.color.white,null));
         }
 
         holder.ph_number.setText(sendNumber.get(position));
