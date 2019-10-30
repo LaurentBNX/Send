@@ -1,9 +1,9 @@
 package com.dentasoft.testsend;
 
-import android.content.Context;
-import android.net.Uri;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import java.io.IOException;
 
 
 public class AboutFragment extends Fragment {
@@ -53,13 +54,29 @@ public class AboutFragment extends Fragment {
         android.widget.LinearLayout ll = new LinearLayout(getActivity());
         ll.setOrientation(android.widget.LinearLayout.VERTICAL);
         ll.setId(R.id.about_fragment_holder_customer_info);
-
+        getActivity().setTitle("About");
         for (int[] customer_detail: Constants.ABOUT_CUSTOMER_DETAILS) {
             getActivity().getSupportFragmentManager().beginTransaction().add(ll.getId(),CustomerInfoFragment.newInstance(customer_detail[0],customer_detail[1])).commit();
         }
-
         customer_info.addView(ll);
+        InitBackgroundPicture(v);
         return v;
+    }
+
+    private void InitBackgroundPicture(View v) {
+        new Thread(
+                () -> {
+                    FtpService ftp = new FtpService(v,Constants.IP);
+                    try {
+                        Constants.about_image = ftp.fetchImage(Constants.ABOUT_RESOURCES_PATH,Constants.ABOUT_BACKGROUND_FILE);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+        ).start();
+        while (Constants.about_image == null){}
+        ConstraintLayout background = v.findViewById(R.id.company_details_background);
+        background.setBackground(new BitmapDrawable(getResources(),Constants.about_image));
     }
 
 

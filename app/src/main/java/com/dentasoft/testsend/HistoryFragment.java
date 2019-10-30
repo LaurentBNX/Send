@@ -9,13 +9,10 @@ import android.view.ViewGroup;
 import androidx.fragment.app.Fragment;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.SocketException;
-import java.util.Arrays;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
 public class HistoryFragment extends Fragment {
@@ -35,7 +32,9 @@ public class HistoryFragment extends Fragment {
                 @Override
                 public void run() {
                     try {
-                        InitFTPServerSetting(v);
+                      //  InitFTPServerSetting(v);
+                        FtpService service = new FtpService(v,Constants.IP);
+                        service.fetchText("/test","msg_LOG.txt");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
