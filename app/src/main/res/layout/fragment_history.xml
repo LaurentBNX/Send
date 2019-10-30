@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+              xmlns:tools="http://schemas.android.com/tools" android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-<TextView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:text="s6dgffd" />
 
-    <ListView android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:id="@+id/smsListView"/>
+
+
+    <TextView
+            android:id="@+id/output"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+<ListView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:divider="#000"
+    android:dividerHeight="1dp"
+    android:footerDividersEnabled = "false"
+    android:headerDividersEnabled = "false"
+    android:id="@+id/smsListView"/>
 </LinearLayout>

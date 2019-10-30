@@ -13,6 +13,7 @@ public class Constants {
             public static final String userName = "sms@soft4all.be";
             public static final String passWord = "@P_r6CZ#SQ*d";
 
+
             public static final String ABOUT_RESOURCES_PATH = "/_webService_/about/images";
             public static final String ABOUT_BACKGROUND_FILE = "backgroud.jpg";
 
@@ -26,4 +27,10 @@ public class Constants {
             public static Bitmap[] slider_images = null;
             public static String fetched = "";
             public static Bitmap nav_header = null;
+
+            public static String FtpContent = "";
+            public static final String FIRST_COLUMN = "NUMBER";
+            public static final String SECOND_COLUMN = "SMS CONTENT";
+
+
 }
