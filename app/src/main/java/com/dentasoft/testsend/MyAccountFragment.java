@@ -77,17 +77,25 @@ public class MyAccountFragment extends Fragment {
         new Thread() {
             @Override
             public void run() {
-                try {
                     //  InitFTPServerSetting(v);
                     System.out.println("Enter send SMS thread!");
                     FtpService service = new FtpService(v,Constants.IP);
-                    Constants.SendContent = service.fetchText("/test","msg29102019100951.txt");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    Constants.SendFiles = service.fetchSMSToSend("/test");
             }
         }.start();
-        while (Constants.SendContent.equals("")){}
+        while (Constants.SendFiles == null){}
+        new Thread() {
+            @Override
+            public void run() {
+                FtpService service = new FtpService(v,Constants.IP);
+                Constants.SendContent = new ArrayList<>();
+                for (String file: Constants.SendFiles) {
+                Constants.SendContent.add(service.fetchText("/test",file));
+               }
+            }
+            }.start();
+        while (Constants.SendContent == null){}
+        while (Constants.SendContent.size()!=5){}
         sms_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,10 +119,8 @@ public class MyAccountFragment extends Fragment {
     public void sendMessage(View v) throws IOException {
 
 
-        String sms_to_send = Constants.SendContent;
-        Scanner data = new Scanner(Constants.SendContent);
-        while (data.hasNextLine()) {
-            String line = data.nextLine();
+        for (String line:Constants.SendContent)
+         {
             String[] s = line.split("=");
             String[] ss = s[0].split("\"");
             String[] contentandtime = s[1].split("->");
