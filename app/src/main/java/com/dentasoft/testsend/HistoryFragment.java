@@ -1,12 +1,15 @@
 package com.dentasoft.testsend;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
@@ -30,11 +33,7 @@ public class HistoryFragment extends Fragment {
     public int i = 0;
     ArrayList<String> sendMessage = new ArrayList<>();
     ArrayList<String> sendNumber = new ArrayList<>();
-    ArrayList<String> sendTime = new ArrayList<>();
-
-    //public static String [] sendMessage = new String[20];
-    //public static String [] sendNumber=new String[20];
-    //public static String [] sendTime=new String[20];
+    ArrayList<String> historyTime = new ArrayList<>();
 
     public HistoryFragment(){}
 
@@ -43,6 +42,7 @@ public class HistoryFragment extends Fragment {
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -50,6 +50,8 @@ public class HistoryFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_history, container, false);
         smsView = v.findViewById(R.id.smsListView);
+
+
 
         // outPut = v.findViewById(R.id.output);
         //populateList();
@@ -64,40 +66,46 @@ public class HistoryFragment extends Fragment {
         }.start();
         while (Constants.FtpContent.equals("")){}
 
-
-
         Scanner data = new Scanner(Constants.FtpContent);
-        // list = new ArrayList<HashMap>();
         while (data.hasNextLine()) {
-            // HashMap temp = new HashMap();
             String line = data.nextLine();
             String[] seperated = line.split("\\|");
-            Date currentTime = Calendar.getInstance().getTime();
-            sendTime.add(String.valueOf(currentTime));
-            sendNumber.add(seperated[0]);
-            sendMessage.add(seperated[1]);
+            //Date currentTime = Calendar.getInstance().getTime();
+            //sendTime.add(String.valueOf(currentTime));
+           if (seperated.length==3)
+           {
+               sendNumber.add(seperated[0]);
+               sendMessage.add(seperated[1]);
+               historyTime.add(seperated[2]);
+               System.out.println("Target phone number:   " +i+ sendNumber.get(i));
+               System.out.println("Content to be sent:   " + sendMessage.get(i));
+               System.out.println("History time:   " + historyTime.get(i));
+               i++;
+           }
+           else {
+               Log.e("Damage message", "Check the damage message: "+line);
+           }
 
             //sendTime[i] = String.valueOf(currentTime);
-            // sendNumber[i] = seperated[0];
-            //sendMessage[i] = seperated[1];
-            System.out.println("Target phone number:   " + sendNumber.get(i));
-            System.out.println("Content to be sent:   " + sendMessage.get(i));
-            System.out.println("Send time:   " + sendTime.get(i));
 
-            //temp.put(Constants.FIRST_COLUMN,seperated[0]);
-            //    temp.put(Constants.SECOND_COLUMN,seperated[1]);
-            //  list.add(temp);
-            //System.out.println("List :  " + temp.get(Constants.FIRST_COLUMN));
         }
 
         Log.e("Number of message", "onCreateView: "+sendMessage.size());
-        ListViewAdapter adapter = new ListViewAdapter(getContext(),sendNumber,sendMessage);
+        ListViewAdapter adapter = new ListViewAdapter(this,getContext(),sendNumber,sendMessage,historyTime);
 
         smsView.setAdapter(adapter);
-        // outPut.setText(Constants.FtpContent);
-        //outPut.setMovementMethod(new ScrollingMovementMethod());
+        smsView.setClickable(true);
+        smsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Object o = smsView.getItemAtPosition(position);
+
+            }
+        });
+
         return v;
     }
+
 
     @Override
     public void onResume() {

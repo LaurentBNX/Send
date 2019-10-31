@@ -9,14 +9,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -36,54 +29,56 @@ public class FtpService {
     }
 
     public String fetchText(String filePath, String fileName) {
-        String fullFileName = filePath + "/" +fileName;
+        String fullFileName = filePath + "/" + fileName;
         FTPClient client = new FTPClient();
         try {
             client.connect(server);
             // Try to login and return the respective boolean value
             boolean login = client.login(user, password);
+            if (login) System.out.println("Login successful!");
+            else System.out.println("Login failed");
+
             int replyCode = client.getReplyCode();
-            if (!FTPReply.isPositiveCompletion(replyCode)){
+            if (!FTPReply.isPositiveCompletion(replyCode)) {
                 client.disconnect();
                 throw new IOException("ftp connection failed:" + replyCode);
             }
+            client.makeDirectory(fullFileName);
+            client.enterLocalPassiveMode();
+
+            client.setFileType(FTP.BINARY_FILE_TYPE);
 
 
+            client.changeWorkingDirectory(filePath);
+
+            InputStream is = client.retrieveFileStream(fileName);
+            InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 
 
-        client.makeDirectory(fullFileName);
-        client.enterLocalPassiveMode();
-
-        client.setFileType(FTP.BINARY_FILE_TYPE);
-
-
-        client.changeWorkingDirectory(filePath);
-        File file =new File(view.getContext().getFilesDir(),fileName);
-
-        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
-        boolean success = client.retrieveFile(fileName, outputStream);
-
-
-        StringBuilder fileContent = new StringBuilder("");
-        FileInputStream fis;
-        int ch;
+            StringBuilder fileContent = new StringBuilder("");
+            FileInputStream fis;
+            int ch;
             fis = view.getContext().openFileInput(fileName);
-            while ((ch = fis.read()) != -1) {
-                fileContent.append((char) ch);
+            try {
+                while ((ch = isr.read()) != -1)
+                    fileContent.append((char) ch);
+            } catch (IOException e) {
+                e.printStackTrace();
+
             }
-        String content = new String(fileContent);
-        return content;
+            String content = new String(fileContent);
+            return content;
         } catch (SocketException e) {
             e.printStackTrace();
-        }  catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return "";
     }
-
-
     public Bitmap fetchImage(String filePath, String fileName) throws IOException {
         String fullFileName = filePath + "/" +fileName;
         FTPClient client = new FTPClient();
@@ -144,6 +139,52 @@ public class FtpService {
             }
 
         } catch (SocketException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<String> fetchSMSToSend(String filePath) {
+        //String fullFileName = filePath + "/" + fileName;
+        FTPClient client = new FTPClient();
+        List<String> result = new ArrayList<>();
+
+        try {
+            client.connect(server);
+            // Try to login and return the respective boolean value
+            boolean login = client.login(user, password);
+            if (login) System.out.println("Login successful!");
+            else System.out.println("Login failed");
+
+            int replyCode = client.getReplyCode();
+            if (!FTPReply.isPositiveCompletion(replyCode)) {
+                client.disconnect();
+                throw new IOException("ftp connection failed:" + replyCode);
+            }
+            client.makeDirectory(filePath);
+            client.enterLocalPassiveMode();
+
+            client.setFileType(FTP.BINARY_FILE_TYPE);
+
+
+            client.changeWorkingDirectory(filePath);
+
+            FTPFile[] files = client.listFiles(filePath);
+            for (FTPFile file: files) {
+                String fileName = file.getName();
+                if (fileName.endsWith(".txt") && !fileName.contains("LOG")) {
+                    result.add(fileName);
+                }
+            }
+
+            return result;
+        } catch (SocketException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();

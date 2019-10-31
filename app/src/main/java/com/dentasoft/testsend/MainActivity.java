@@ -45,9 +45,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         InitMenu();
         InitNavHeader();
 
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        InitMenu(toolbar);
 
     }
 
