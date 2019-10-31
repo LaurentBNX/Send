@@ -64,7 +64,6 @@ public class HistoryFragment extends Fragment {
 
         getActivity().setTitle("History");
         LinearLayout tb_container = (LinearLayout)inflater.inflate(R.layout.toolbar_history_normal,container,false);
-
         smsView = v.findViewById(R.id.smsListView);
         amount_of_msg = v.findViewById(R.id.message_amount_txt);
         DownloadMessages(v);
@@ -76,6 +75,8 @@ public class HistoryFragment extends Fragment {
         ((MainActivity)getActivity()).InitMenu((Toolbar) tb_container.getChildAt(0),mAdapter);
         return v;
     }
+
+
 
     private void InitMessages(View v) {
         Scanner data = new Scanner(Constants.FtpContent);

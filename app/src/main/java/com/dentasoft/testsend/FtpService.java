@@ -1,7 +1,9 @@
 package com.dentasoft.testsend;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.View;
 
 import org.apache.commons.net.ftp.FTP;
@@ -71,6 +73,7 @@ public class FtpService {
         }
         return "";
     }
+
     public Bitmap fetchImage(String filePath, String fileName) throws IOException {
         String fullFileName = filePath + "/" +fileName;
         FTPClient client = new FTPClient();
@@ -147,7 +150,7 @@ public class FtpService {
             client.connect(server);
             // Try to login and return the respective boolean value
             boolean login = client.login(user, password);
-            if (login) System.out.println("Login successful!");
+            if (login) System.out.println("Fetch SMS send Login successful!");
             else System.out.println("Login failed");
 
             int replyCode = client.getReplyCode();
@@ -155,21 +158,23 @@ public class FtpService {
                 client.disconnect();
                 throw new IOException("ftp connection failed:" + replyCode);
             }
-            client.makeDirectory(filePath);
+
+           // client.makeDirectory(filePath);
             client.enterLocalPassiveMode();
-
             client.setFileType(FTP.BINARY_FILE_TYPE);
-
-
             client.changeWorkingDirectory(filePath);
 
             FTPFile[] files = client.listFiles(filePath);
             for (FTPFile file: files) {
                 String fileName = file.getName();
-                if (fileName.endsWith(".txt") && !fileName.contains("LOG")) {
-                    result.add(fileName);
+               // if (fileName.endsWith(".txt") && !fileName.contains("LOG")) {
+                    if (fileName.endsWith(".txt") && fileName.contains("msg291")&& !fileName.contains("LOG")) {
+
+                        result.add(fileName);
+                    System.out.println("Fetched file name:  " + fileName);
                 }
             }
+           // System.out.println("Size of files: "+ result.size());
 
             return result;
         } catch (SocketException e) {
@@ -182,6 +187,55 @@ public class FtpService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String fetchSMSText(String filePath, String fileName) {
+        String fullFileName = filePath + "/" + fileName;
+        FTPClient client = new FTPClient();
+        try {
+            client.connect(server);
+            // Try to login and return the respective boolean value
+            boolean login = client.login(user, password);
+//            if (login)
+//                System.out.println("Login successful!");
+//            else System.out.println("Login failed");
+
+            int replyCode = client.getReplyCode();
+            if (!FTPReply.isPositiveCompletion(replyCode)) {
+                client.disconnect();
+                throw new IOException("ftp connection failed:" + replyCode);
+            }
+            client.makeDirectory(fullFileName);
+            client.enterLocalPassiveMode();
+
+            client.setFileType(FTP.BINARY_FILE_TYPE);
+
+
+            client.changeWorkingDirectory(filePath);
+
+            InputStream is = client.retrieveFileStream(fileName);
+            InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+            BufferedInputStream bInf=new BufferedInputStream (is);
+            int bytesRead;
+            byte[] buffer=new byte[1024];
+            String fileContent=null;
+            while((bytesRead=bInf.read(buffer))!=-1)
+            {
+                fileContent= new String(buffer,0,bytesRead);
+            }
+
+
+            return fileContent;
+        } catch (SocketException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
 }

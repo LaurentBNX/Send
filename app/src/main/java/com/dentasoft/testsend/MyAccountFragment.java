@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 
@@ -81,21 +82,32 @@ public class MyAccountFragment extends Fragment {
                     System.out.println("Enter send SMS thread!");
                     FtpService service = new FtpService(v,Constants.IP);
                     Constants.SendFiles = service.fetchSMSToSend("/test");
+                    //add
+                    Constants.SendContent = new ArrayList<>();
+                for (String file: Constants.SendFiles) {
+                        //System.out.println("Fetched file name !!: "+file);
+                        Constants.SMSContent = service.fetchSMSText("/test",file);
+                        System.out.println("SendFiles:  "+ Constants.SMSContent);
+                        Constants.SendContent.add(Constants.SMSContent);
+                }
             }
         }.start();
+
         while (Constants.SendFiles == null){}
-        new Thread() {
-            @Override
-            public void run() {
-                FtpService service = new FtpService(v,Constants.IP);
-                Constants.SendContent = new ArrayList<>();
-                for (String file: Constants.SendFiles) {
-                Constants.SendContent.add(service.fetchText("/test",file));
-               }
-            }
-            }.start();
-        while (Constants.SendContent == null){}
-        while (Constants.SendContent.size()!=5){}
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                FtpService service = new FtpService(v,Constants.IP);
+//                Constants.SendContent = new ArrayList<>();
+//                for (String file: Constants.SendFiles) {
+//                Constants.SendContent.add(service.fetchText("/test", file));
+//                    System.out.println("Second open file:  "+ Constants.SendContent);
+//
+//               }
+//            }
+//            }.start();
+//        while (Constants.SendContent == null){}
+//        while (Constants.SendContent.size()!=5){}
         sms_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,14 +137,14 @@ public class MyAccountFragment extends Fragment {
             String[] ss = s[0].split("\"");
             String[] contentandtime = s[1].split("->");
 
-            //Date currentTime = Calendar.getInstance().getTime();
-            //sendTime.add(String.valueOf(currentTime));
+            sendNumber.add(ss[ss.length-1]);
+            sendMessage.add(contentandtime[0]);
+            Date currentTime = Calendar.getInstance().getTime();
+            sendTime.add(String.valueOf(currentTime));
 
-                sendNumber.add(ss[ss.length-1]);
-                sendMessage.add(contentandtime[0]);
-
-
-            //sendTime[i] = String.valueOf(currentTime);
+             System.out.println("Message part: "+ contentandtime[0]);
+             System.out.println("Send to this number: "+ss[ss.length-1]);
+             System.out.println("Send time: "+ String.valueOf(currentTime));
 
             try {
                 SmsManager smsManager = SmsManager.getDefault();
@@ -145,7 +157,7 @@ public class MyAccountFragment extends Fragment {
                 Toast.makeText(getContext(),"SMS sent failed, please try again!!", Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
-            i++;
+
             if (i == 10) {break;}
                 if (counter_sms==3){
                 Log.e("Notification", "Reach 8000 sms limitation, please change SIM card.");
@@ -153,10 +165,9 @@ public class MyAccountFragment extends Fragment {
                 break;
             }
 
-
+             i++;
+             counter_sms++;
         }
-
-
 
     }
 }
