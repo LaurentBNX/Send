@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.ViewPager;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,13 +16,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.dentasoft.testsend.adapters.ImageAdapter;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CustomerInfoFragment.OnFragmentInteractionListener {
     private DrawerLayout drawer;
@@ -29,13 +34,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        try {
+
+           new Thread(() -> {
+               DownloadNavHeader();
+               DownloadSliderImages();}
+               ).start();
+        } catch (Exception e) {}
+        while (Constants.slider_images == null || Constants.nav_header == null){}
+        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         InitMenu();
+        InitNavHeader();
 
 
     }
+
+    private void DownloadSliderImages() {
+        try {
+            FtpService ftp = new FtpService(navigationView,Constants.IP);
+            List<Bitmap> slider_images = new ArrayList<>();
+            slider_images.addAll(ftp.fetchImages(Constants.HOME_SLIDER_IMG_PATH));
+            Constants.slider_images = slider_images.toArray(new Bitmap[5]);
+        } catch (IOException e) {
+            e.printStackTrace();}
+    }
+
     public void InitMenu() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -46,31 +71,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawer,toolbar,R.string.nav_open,R.string.nav_close);
 
         drawer.addDrawerListener(toggle);
+        navigationView.setCheckedItem(R.id.nav_home);
         toggle.syncState();
-        //InitNavHeader();
+
 
 
 
     }
 
-    public void InitNavHeader() {
-        Bitmap bm = null;
 
-        Thread get_nav_header = new Thread(() ->  {
-            try {
-                FtpService ftp = new FtpService(navigationView,Constants.IP);
-                Constants.nav_header = ftp.fetchImage(Constants.MENU_IMAGES_PATH,Constants.MENU_NAV_HEADER_FILE);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void DownloadNavHeader() {
+        FtpService ftp = new FtpService(navigationView,Constants.IP);
+        try {
+            Constants.nav_header = ftp.fetchImage(Constants.MENU_IMAGES_PATH,Constants.MENU_NAV_HEADER_FILE);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        );
-        get_nav_header.start();
-
-        while (Constants.nav_header == null){}
+    }
+    public void InitNavHeader() {
 
         ImageView img = navigationView.getHeaderView(0).findViewById(R.id.image_menu);
         img.setImageDrawable(new BitmapDrawable(getResources(),Constants.nav_header));
+
     }
     @Override
     public void onBackPressed() {

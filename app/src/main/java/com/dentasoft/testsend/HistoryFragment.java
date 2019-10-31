@@ -57,13 +57,9 @@ public class HistoryFragment extends Fragment {
         new Thread() {
             @Override
             public void run() {
-                try {
                     //  InitFTPServerSetting(v);
                     FtpService service = new FtpService(v,Constants.IP);
                     Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         }.start();
         while (Constants.FtpContent.equals("")){}

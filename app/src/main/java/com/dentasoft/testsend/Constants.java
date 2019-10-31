@@ -17,7 +17,11 @@ public class Constants {
             public static final String ABOUT_RESOURCES_PATH = "/_webService_/about/images";
             public static final String ABOUT_BACKGROUND_FILE = "backgroud.jpg";
 
-            public static final String HOME_SLIDER_PATH = "/_webService_/slider/img";
+            public static final String HOME_SLIDER_PATH = "/_webService_/slider";
+            public static final String HOME_SLIDER_IMG_PATH = HOME_SLIDER_PATH+"/img";
+            public static final String HOME_SLIDER_CONFIG_FILE = "slider.json";
+
+
 
             public static final String MENU_IMAGES_PATH = "/_webService_/config/img";
 

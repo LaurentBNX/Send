@@ -1,6 +1,7 @@
 package com.dentasoft.testsend;
 
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -75,8 +76,9 @@ public class AboutFragment extends Fragment {
                 }
         ).start();
         while (Constants.about_image == null){}
-        ConstraintLayout background = v.findViewById(R.id.company_details_background);
-        background.setBackground(new BitmapDrawable(getResources(),Constants.about_image));
+        LinearLayout background = v.findViewById(R.id.company_details_background);
+        Drawable bg = new BitmapDrawable(getResources(),Constants.about_image);
+        background.setBackground(bg);
     }
 
 

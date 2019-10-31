@@ -14,6 +14,10 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.dentasoft.testsend.adapters.ImageAdapter;
+import com.dentasoft.testsend.dto.SliderDto;
+import com.google.gson.Gson;
+
+import org.apache.commons.net.ftp.FTP;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,28 +37,12 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home,container,false);
     getActivity().setTitle("Home");
-    //InitSliderImages(v);
+    InitSliderImages(v);
         return v;
     }
 
     private void InitSliderImages(View v) {
-        List<Bitmap> slider_images = new ArrayList<>();
-        new Thread(
-                () -> {
-                    FtpService ftp = new FtpService(v,Constants.IP);
-                    try {
-                            slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide1.png"));
-                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide2.png"));
-                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide3.png"));
-                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide4.png"));
-                        slider_images.add(ftp.fetchImage(Constants.HOME_SLIDER_PATH,"slide5.png"));
-                    } catch (IOException e) {
-                        e.printStackTrace();}
 
-                }
-        ).start();
-        while (slider_images.size() < 5) {}
-        Constants.slider_images = slider_images.toArray(new Bitmap[5]);
         ImageAdapter adapter = new ImageAdapter(v.getContext(),Constants.slider_images);
         ViewPager pager = v.findViewById(R.id.home_viewpager);
         pager.setAdapter(adapter);
