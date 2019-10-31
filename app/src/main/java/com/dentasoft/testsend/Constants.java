@@ -34,8 +34,9 @@ public class Constants {
             public static Bitmap nav_header = null;
 
             public static String FtpContent = "";
+            public static String SMSContent = "";
             public static List<String> SendFiles = null;
-        public static List<String> SendContent = null;
+            public static List<String> SendContent = null;
             public static final String FIRST_COLUMN = "NUMBER";
             public static final String SECOND_COLUMN = "SMS CONTENT";
 

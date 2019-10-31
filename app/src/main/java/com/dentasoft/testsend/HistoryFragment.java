@@ -62,6 +62,8 @@ public class HistoryFragment extends Fragment {
                     //  InitFTPServerSetting(v);
                     FtpService service = new FtpService(v,Constants.IP);
                     Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
+                    //Constants.SMSContent = service.fetchText("/test","msg29102019100951.txt");
+                    //Log.e("Test value", "SMSContent: "+ Constants.SMSContent);
             }
         }.start();
         while (Constants.FtpContent.equals("")){}
