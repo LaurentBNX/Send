@@ -35,7 +35,7 @@ public class FtpService {
         this.password = Constants.passWord;
     }
 
-    public String fetchText(String filePath, String fileName) throws IOException {
+    public String fetchText(String filePath, String fileName) {
         String fullFileName = filePath + "/" +fileName;
         FTPClient client = new FTPClient();
         try {
@@ -48,11 +48,7 @@ public class FtpService {
                 throw new IOException("ftp connection failed:" + replyCode);
             }
 
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
 
         client.makeDirectory(fullFileName);
@@ -65,32 +61,26 @@ public class FtpService {
         File file =new File(view.getContext().getFilesDir(),fileName);
 
         OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
-        boolean success = client.retrieveFile("msg_LOG.txt", outputStream);
+        boolean success = client.retrieveFile(fileName, outputStream);
 
 
         StringBuilder fileContent = new StringBuilder("");
         FileInputStream fis;
         int ch;
-        try {
             fis = view.getContext().openFileInput(fileName);
-            try {
-                while ((ch = fis.read()) != -1)
-                    fileContent.append((char) ch);
-            } catch (IOException e) {
-                e.printStackTrace();
+            while ((ch = fis.read()) != -1) {
+                fileContent.append((char) ch);
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
         String content = new String(fileContent);
         return content;
-
-
-
-
-
-
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }  catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
 
@@ -119,6 +109,38 @@ public class FtpService {
                 client.logout();
                 client.disconnect();
                 return bitmap;
+            }
+
+        } catch (SocketException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Bitmap> fetchImages(String filePath) throws IOException {
+        List<Bitmap> result = new ArrayList<>();
+        FTPClient client = new FTPClient();
+        try {
+            client.connect(server);
+            client.login(user, password);
+            int replyCode = client.getReplyCode();
+            if (!FTPReply.isPositiveCompletion(replyCode)){
+                client.disconnect();
+                throw new IOException("ftp connection failed:" + replyCode);
+            } else {
+                client.enterLocalPassiveMode();
+                client.setFileType(FTP.BINARY_FILE_TYPE);
+                client.changeWorkingDirectory(filePath);
+                FTPFile[] files = client.listFiles(filePath);
+                for (FTPFile file: files) {
+                    String fileName = file.getName();
+                    if (fileName.endsWith(".png") || fileName.endsWith(".jpg")) {
+                        result.add(fetchImage(filePath,fileName));
+                    }
+                }
+                return result;
             }
 
         } catch (SocketException e) {
