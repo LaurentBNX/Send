@@ -3,6 +3,8 @@ package com.dentasoft.testsend;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.telephony.SmsManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +15,27 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Scanner;
 
 public class MyAccountFragment extends Fragment {
 
     private EditText mIdentifier;
     private SharedPreferences.Editor mEditor;
     private SharedPreferences mPreferences;
+
+    public int i = 0;
+    public static int counter_sms = 0;
+    ArrayList<String> sendMessage = new ArrayList<>();
+    ArrayList<String> sendNumber = new ArrayList<>();
+    ArrayList<String> sendTime = new ArrayList<>();
 
     public MyAccountFragment(){}
 
@@ -57,6 +74,31 @@ public class MyAccountFragment extends Fragment {
         quit_button.setOnClickListener(v1 -> {
             getActivity().finish();
         });
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    //  InitFTPServerSetting(v);
+                    System.out.println("Enter send SMS thread!");
+                    FtpService service = new FtpService(v,Constants.IP);
+                    Constants.SendContent = service.fetchText("/test","msg29102019100951.txt");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+        while (Constants.SendContent.equals("")){}
+        sms_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("onClick", "button_Send clicked send All SMS");
+                try {
+                    sendMessage(v);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void DisplaySavedValues(View v) {
@@ -65,4 +107,52 @@ public class MyAccountFragment extends Fragment {
             mIdentifier.setText(mPreferences.getString("user_my_account_identifier",""));
         }
     }
+
+    public void sendMessage(View v) throws IOException {
+
+
+        String sms_to_send = Constants.SendContent;
+        Scanner data = new Scanner(Constants.SendContent);
+        while (data.hasNextLine()) {
+            String line = data.nextLine();
+            String[] s = line.split("=");
+            String[] ss = s[0].split("\"");
+            String[] contentandtime = s[1].split("->");
+
+            //Date currentTime = Calendar.getInstance().getTime();
+            //sendTime.add(String.valueOf(currentTime));
+
+                sendNumber.add(ss[ss.length-1]);
+                sendMessage.add(contentandtime[0]);
+
+
+            //sendTime[i] = String.valueOf(currentTime);
+
+            try {
+                SmsManager smsManager = SmsManager.getDefault();
+                System.out.println();
+                smsManager.sendTextMessage("0032476546869",null,contentandtime[0],null,null);
+                Toast toast = Toast.makeText(getContext(),"Sms sent!!!",Toast.LENGTH_LONG);
+                toast.show();
+
+            }catch (Exception e){
+                Toast.makeText(getContext(),"SMS sent failed, please try again!!", Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
+            i++;
+            if (i == 10) {break;}
+                if (counter_sms==3){
+                Log.e("Notification", "Reach 8000 sms limitation, please change SIM card.");
+                counter_sms = 0;
+                break;
+            }
+
+
+        }
+
+
+
+    }
 }
+
+

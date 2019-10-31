@@ -9,14 +9,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -42,6 +35,9 @@ public class FtpService {
             client.connect(server);
             // Try to login and return the respective boolean value
             boolean login = client.login(user, password);
+            if (login) System.out.println("Login successful!");
+            else System.out.println("Login failed");
+
             int replyCode = client.getReplyCode();
             if (!FTPReply.isPositiveCompletion(replyCode)){
                 client.disconnect();
@@ -63,9 +59,10 @@ public class FtpService {
 
         client.changeWorkingDirectory(filePath);
         File file =new File(view.getContext().getFilesDir(),fileName);
-
         OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
-        boolean success = client.retrieveFile("msg_LOG.txt", outputStream);
+        InputStream is = client.retrieveFileStream(fileName);
+        InputStreamReader isr = new InputStreamReader(is,"UTF-8");
+
 
 
         StringBuilder fileContent = new StringBuilder("");
@@ -74,7 +71,7 @@ public class FtpService {
         try {
             fis = view.getContext().openFileInput(fileName);
             try {
-                while ((ch = fis.read()) != -1)
+                while ((ch = isr.read()) != -1)
                     fileContent.append((char) ch);
             } catch (IOException e) {
                 e.printStackTrace();

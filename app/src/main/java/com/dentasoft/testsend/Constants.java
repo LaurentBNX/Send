@@ -1,6 +1,11 @@
 package com.dentasoft.testsend;
 
 import android.graphics.Bitmap;
+import android.view.View;
+import android.widget.ListView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Constants {
     public static int[][] ABOUT_CUSTOMER_DETAILS = {
@@ -29,8 +34,11 @@ public class Constants {
             public static Bitmap nav_header = null;
 
             public static String FtpContent = "";
+            public static String SendContent = "";
             public static final String FIRST_COLUMN = "NUMBER";
             public static final String SECOND_COLUMN = "SMS CONTENT";
+
+            public static List<Integer> selected_messages = new ArrayList<>();
 
 
 }

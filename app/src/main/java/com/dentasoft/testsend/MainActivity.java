@@ -31,13 +31,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        InitMenu();
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        InitMenu(toolbar);
 
 
     }
-    public void InitMenu() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
+    public void InitMenu(Toolbar toolbar) {
+
         setSupportActionBar(toolbar);
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
