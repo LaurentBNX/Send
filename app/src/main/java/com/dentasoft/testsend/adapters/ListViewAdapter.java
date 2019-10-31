@@ -13,6 +13,7 @@ import com.dentasoft.testsend.Constants;
 import com.dentasoft.testsend.HistoryFragment;
 import com.dentasoft.testsend.MainActivity;
 import com.dentasoft.testsend.R;
+import com.dentasoft.testsend.dialog.SearchHistoryDialog;
 
 import java.util.ArrayList;
 
@@ -26,6 +27,7 @@ public class ListViewAdapter extends BaseAdapter {
     HistoryFragment parent_view;
     LinearLayout container;
     private LinearLayout history_toolbar;
+    private LinearLayout mNormal_toolbar;
 
 
     public ListViewAdapter(HistoryFragment parent,Context context, ArrayList<String> sendNumber, ArrayList<String> sendMessage, ArrayList<String> historyTime) {
@@ -37,6 +39,7 @@ public class ListViewAdapter extends BaseAdapter {
         this.historyTime = historyTime;
         inflater = (LayoutInflater.from(context));
         container = parent_view.getActivity().findViewById(R.id.toolbar_container);
+        mNormal_toolbar = (LinearLayout)parent.getLayoutInflater().inflate(R.layout.toolbar_history_normal,null,false);
 
     }
 
@@ -64,7 +67,7 @@ public class ListViewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
+        mNormal_toolbar = (LinearLayout) inflater.inflate(R.layout.toolbar_history_normal,null);
         ViewHolder holder;
 
         if(convertView == null) {
@@ -94,26 +97,28 @@ public class ListViewAdapter extends BaseAdapter {
         holder.ph_number.setText(sendNumber.get(position));
         holder.sms_content.setText(sendMessage.get(position));
         holder.history_time.setText(historyTime.get(position));
-
+        ListViewAdapter adapter = this;
         convertView.setClickable(true);
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ColorDrawable d = (ColorDrawable) v.getBackground();
                 int color = d.getColor();
-                if (color ==v.getResources().getColor(R.color.orange,null)){
+                boolean selected = color ==v.getResources().getColor(R.color.orange,null);
+                if (selected){
                     v.setBackgroundColor(v.getResources().getColor(position % 2 == 0 ? R.color.alternate_row: R.color.white,null));
                     counter--;
                     Constants.selected_messages.remove(Constants.selected_messages.indexOf(position));
                     if (counter == 0) {
                         container.removeViewAt(0);
-                       LinearLayout home_toolbar = (LinearLayout) inflater.inflate(R.layout.home_toolbar,null);
-                        home_toolbar.setLayoutParams(new LinearLayout.LayoutParams(
+
+                        mNormal_toolbar.setLayoutParams(new LinearLayout.LayoutParams(
                                 LinearLayout.LayoutParams.MATCH_PARENT,
                                 LinearLayout.LayoutParams.MATCH_PARENT
                         ));
-                        container.addView(home_toolbar);
-                        ((MainActivity)parent_view.getActivity()).InitMenu((Toolbar)home_toolbar.getChildAt(0));
+                        parent_view.InitHistoryToolbar(mNormal_toolbar,adapter);
+
+                        ((MainActivity)parent_view.getActivity()).InitMenu((Toolbar) mNormal_toolbar.getChildAt(0),adapter);
                     } else {
                        updateToolbarCounter();
                     }
@@ -121,7 +126,6 @@ public class ListViewAdapter extends BaseAdapter {
                 else {
                     v.setBackgroundColor(v.getResources().getColor( R.color.orange ,null));
                     counter++;
-
                     Constants.selected_messages.add(position);
                     if (counter == 1) {
                         container.removeViewAt(0);
@@ -135,11 +139,7 @@ public class ListViewAdapter extends BaseAdapter {
                     } else {
                        updateToolbarCounter();
                     }
-                    //parent_
                 }
-
-
-                //System.out.println("The number of selected: "+ counter);
             }
         });
 
@@ -147,8 +147,17 @@ public class ListViewAdapter extends BaseAdapter {
         return convertView;
     }
 
+
+
     public void updateToolbarCounter() {
         TextView txt_counter = history_toolbar.findViewById(R.id.history_select_counter);
         txt_counter.setText(counter+"");
+    }
+
+    public void filter(String from,String to) {
+        parent_view.filter(from,to);
+    }
+    public void filter(String number) {
+        parent_view.filter(number);
     }
 }

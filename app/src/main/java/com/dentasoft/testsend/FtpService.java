@@ -56,21 +56,13 @@ public class FtpService {
 
 
             StringBuilder fileContent = new StringBuilder("");
-            FileInputStream fis;
             int ch;
-            fis = view.getContext().openFileInput(fileName);
-            try {
-                while ((ch = isr.read()) != -1)
-                    fileContent.append((char) ch);
-            } catch (IOException e) {
-                e.printStackTrace();
 
-            }
-            String content = new String(fileContent);
+            while ((ch = isr.read()) != -1)
+                fileContent.append((char) ch);
+            String content = new String(fileContent.toString());
             return content;
         } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

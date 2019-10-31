@@ -88,6 +88,7 @@
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:inputType="none"
+            android:maxLines="1"
             android:hint="from date"
             android:id="@+id/datepicker_min_date"/>
         <EditText
@@ -102,6 +103,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="search"
+        android:id="@+id/statistics_btn_search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/datepicker_container"/>

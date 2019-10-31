@@ -10,17 +10,27 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.SocketException;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 import com.dentasoft.testsend.adapters.ListViewAdapter;
+import com.dentasoft.testsend.dialog.SearchHistoryDialog;
+import com.dentasoft.testsend.dialog.SearchNumberDialog;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
@@ -29,11 +39,14 @@ public class HistoryFragment extends Fragment {
     //  private ArrayList<HashMap> list;
     // list = new ArrayList<HashMap>();
     private ListView smsView;
-    private TextView outPut;
+    private TextView amount_of_msg;
     public int i = 0;
     ArrayList<String> sendMessage = new ArrayList<>();
     ArrayList<String> sendNumber = new ArrayList<>();
     ArrayList<String> historyTime = new ArrayList<>();
+    private LinearLayout mToolbar_container;
+    private ListViewAdapter mAdapter;
+
 
     public HistoryFragment(){}
 
@@ -47,65 +60,129 @@ public class HistoryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_history, container, false);
+
+        getActivity().setTitle("History");
+        LinearLayout tb_container = (LinearLayout)inflater.inflate(R.layout.toolbar_history_normal,container,false);
+
         smsView = v.findViewById(R.id.smsListView);
+        amount_of_msg = v.findViewById(R.id.message_amount_txt);
+        DownloadMessages(v);
+        InitMessages(v);
+        DisplayMessages(v);
+        mToolbar_container = getActivity().findViewById(R.id.toolbar_container);
+        mToolbar_container.removeAllViews();
+        mToolbar_container.addView(tb_container);
+        ((MainActivity)getActivity()).InitMenu((Toolbar) tb_container.getChildAt(0),mAdapter);
+        return v;
+    }
 
-
-
-        // outPut = v.findViewById(R.id.output);
-        //populateList();
-
-        new Thread() {
-            @Override
-            public void run() {
-                    //  InitFTPServerSetting(v);
-                    FtpService service = new FtpService(v,Constants.IP);
-                    Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
-            }
-        }.start();
-        while (Constants.FtpContent.equals("")){}
-
+    private void InitMessages(View v) {
         Scanner data = new Scanner(Constants.FtpContent);
         while (data.hasNextLine()) {
             String line = data.nextLine();
             String[] seperated = line.split("\\|");
-            //Date currentTime = Calendar.getInstance().getTime();
-            //sendTime.add(String.valueOf(currentTime));
-           if (seperated.length==3)
-           {
-               sendNumber.add(seperated[0]);
-               sendMessage.add(seperated[1]);
-               historyTime.add(seperated[2]);
-               System.out.println("Target phone number:   " +i+ sendNumber.get(i));
-               System.out.println("Content to be sent:   " + sendMessage.get(i));
-               System.out.println("History time:   " + historyTime.get(i));
-               i++;
-           }
-           else {
-               Log.e("Damage message", "Check the damage message: "+line);
-           }
+            if (seperated.length==3)
+            {
+                sendNumber.add(seperated[0]);
+                sendMessage.add(seperated[1]);
+                historyTime.add(seperated[2]);
 
-            //sendTime[i] = String.valueOf(currentTime);
+            }
+            else {
+                Log.e("Damage message", "Check the damage message: "+line);
+            }
+
 
         }
 
         Log.e("Number of message", "onCreateView: "+sendMessage.size());
-        ListViewAdapter adapter = new ListViewAdapter(this,getContext(),sendNumber,sendMessage,historyTime);
 
-        smsView.setAdapter(adapter);
-        smsView.setClickable(true);
-        smsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Object o = smsView.getItemAtPosition(position);
-
-            }
-        });
-
-        return v;
     }
 
+    private void DownloadMessages(View v) {
+        new Thread() {
+            @Override
+            public void run() {
+                //  InitFTPServerSetting(v);
+                FtpService service = new FtpService(v,Constants.IP);
+                Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
+            }
+        }.start();
+        while (Constants.FtpContent.equals("")){}
+    }
+
+    public void DisplayMessages(View v) {
+        mAdapter = new ListViewAdapter(this,getContext(),sendNumber,sendMessage,historyTime);
+
+        smsView.setAdapter(mAdapter);
+        smsView.setClickable(true);
+        amount_of_msg.setText(mAdapter.getCount()+" messages");
+
+    }
+
+    public void filter(String from,String to) {
+        ArrayList<String> numbers = new ArrayList<>();
+        ArrayList<String> messages = new ArrayList<>();
+        ArrayList<String> time = new ArrayList<>();
+        try {
+            Date from_bound = new SimpleDateFormat("dd/MM/yyyy").parse(from);
+            Date to_bound = new SimpleDateFormat("dd/MM/yyyy").parse(to);
+                for (int i = 0; i < historyTime.size(); i++) {
+                    Date date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(historyTime.get(i));
+                    if (date.after(from_bound) && date.before(to_bound)) {
+                        numbers.add(sendNumber.get(i));
+                        messages.add(sendMessage.get(i));
+                        time.add(historyTime.get(i));
+                    }
+                }
+          } catch (ParseException e) {
+              e.printStackTrace();
+          }
+
+        ListViewAdapter adapter = new ListViewAdapter(this,getContext(), numbers,messages,time);
+        smsView.setAdapter(adapter);
+        smsView.setClickable(true);
+        amount_of_msg.setText(adapter.getCount()+" messages");
+    }
+
+    public void filter(String number) {
+        ArrayList<String> numbers = new ArrayList<>();
+        ArrayList<String> messages = new ArrayList<>();
+        ArrayList<String> time = new ArrayList<>();
+            for (int i = 0; i < historyTime.size(); i++) {
+                if (sendNumber.get(i).contains(number)) {
+                    numbers.add(sendNumber.get(i));
+                    messages.add(sendMessage.get(i));
+                    time.add(historyTime.get(i));
+                }
+            }
+        ListViewAdapter adapter = new ListViewAdapter(this,getContext(), numbers,messages,time);
+        smsView.setAdapter(adapter);
+        smsView.setClickable(true);
+        amount_of_msg.setText(adapter.getCount()+" messages");
+    }
+
+    public void InitHistoryToolbar(LinearLayout toolbar, ListViewAdapter adapter) {
+
+        ImageView search_date = toolbar.findViewById(R.id.history_toolbar_search);
+        ImageView search_number = toolbar.findViewById(R.id.history_toolbar_search_number);
+        search_date.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SearchHistoryDialog shdia = new SearchHistoryDialog(getContext(),adapter);
+                shdia.show();
+            }
+        });
+        search_number.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SearchNumberDialog sndia = new SearchNumberDialog(getContext(),adapter);
+                sndia.show();
+            }
+        });
+        mToolbar_container.addView(toolbar);
+    }
 
     @Override
     public void onResume() {
@@ -113,105 +190,10 @@ public class HistoryFragment extends Fragment {
 
     }
 
-    public void InitFTPServerSetting(View v ) throws IOException {
-        String server = Constants.IP;
-
-        FTPClient client = new FTPClient();
-        try {
-            client.connect(server);
-            // Try to login and return the respective boolean value
-            boolean login = client.login(Constants.userName, Constants.passWord);
-            int replyCode = client.getReplyCode();
-            if (FTPReply.isPositiveCompletion(replyCode)){
-                Log.e("FTPUtils","Logging successful");
-            }
-            else{
-                client.disconnect();
-                throw new IOException("ftp connection failed:" + replyCode);
-            }
-
-// If login is true notify user
-
-            if (login) {
-                System.out.println("Connection established...");
-                //Log.e(TAG, "Initialize successful");
-            }
-            else {
-                System.out.println("Connection fail...");
-            }
-
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        /**
-         * Download file from server
-         */
-        System.out.println("Enter downloading..");
-        String remoteFilePath = "/test/msg_LOG.txt";
-        String localFilePath = "D:\\DentalSoft\\Download\\msg_LOG.txt";
-
-        client.makeDirectory(remoteFilePath);
-        client.enterLocalPassiveMode();
-        client.setFileType(FTP.BINARY_FILE_TYPE);
-
-        System.out.println("Remote system is " + client.getSystemType());
-        client.changeWorkingDirectory("/test");
-        System.out.println("Current directory is " + client.printWorkingDirectory());
-        File file =new File(v.getContext().getFilesDir(),"msg_LOG.txt");
-        System.out.println("Directory of " + file);
-        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
-
-        boolean success = client.retrieveFile("msg_LOG.txt", outputStream);
-        if (success) {
-            Log.e("FTP","Ftp file successfully download...");
-        }
-
-        String FilePath = v.getContext().getFilesDir() + "/" + "msg_LOG.txt";
-        System.out.println("File direction:  " + FilePath);
-
-        StringBuilder fileContent = new StringBuilder("");
-        FileInputStream fis;
-        int ch;
-        try {
-            fis = v.getContext().openFileInput("msg_LOG.txt");
-            Log.e("onClick", "Read successful");
-            System.out.println(fis);
-
-            try {
-                while ((ch = fis.read()) != -1)
-                    fileContent.append((char) ch);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        String content = new String(fileContent);
-        Log.e("Laurent",content);
-        Log.e("fdg",content.split("\n").length+"");
-        //smsView.;
-
-        Constants.FtpContent = content;
-        //   Arrays.asList(s).stream().forEach(sl -> Log.e("line",sl));
-
-        /**
-         * Another difference is that openFileOutputStream opens / creates
-         * a file in the the device's "internal" storage.
-         * By contrast FileOutputStream allows use of both internal and external storage.
-         *
-         * Java BufferedOutputStream class is used for buffering an output stream.
-         * It internally uses buffer to store data.
-         * It adds more efficiency than to write data directly into a stream.
-         * So, it makes the performance fast.
-         *
-         */
-
-        outputStream.close();
-
-
+    @Override
+    public void onPause() {
+        super.onPause();
+        ((LinearLayout)getActivity().findViewById(R.id.toolbar_container)).removeViewAt(0);
+        ((MainActivity)getActivity()).InitMenu(null,null);
     }
-
 }

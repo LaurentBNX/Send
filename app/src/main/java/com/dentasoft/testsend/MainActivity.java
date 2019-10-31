@@ -22,6 +22,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.dentasoft.testsend.adapters.ImageAdapter;
+import com.dentasoft.testsend.adapters.ListViewAdapter;
+import com.dentasoft.testsend.dialog.SearchHistoryDialog;
+import com.dentasoft.testsend.dialog.SearchNumberDialog;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.IOException;
@@ -35,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         try {
-
            new Thread(() -> {
                DownloadNavHeader();
                DownloadSliderImages();}
@@ -45,13 +47,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        InitMenu(findViewById(R.id.toolbar),null);
 
-        InitMenu();
         InitNavHeader();
 
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        InitMenu(toolbar);
 
     }
 
@@ -65,8 +65,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             e.printStackTrace();}
     }
 
-    public void InitMenu() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
+    public void InitMenu(Toolbar toolbar, ListViewAdapter adapter) {
+        if (toolbar == null){
+            toolbar = findViewById(R.id.toolbar);
+        }
         setSupportActionBar(toolbar);
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -75,10 +77,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawer,toolbar,R.string.nav_open,R.string.nav_close);
 
         drawer.addDrawerListener(toggle);
-        navigationView.setCheckedItem(R.id.nav_home);
         toggle.syncState();
 
-
+        try {
+            ImageView search_date = toolbar.findViewById(R.id.history_toolbar_search);
+            ImageView search_number = toolbar.findViewById(R.id.history_toolbar_search_number);
+            search_date.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SearchHistoryDialog shdia = new SearchHistoryDialog(MainActivity.this,adapter);
+                    shdia.show();
+                }
+            });
+            search_number.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SearchNumberDialog sndia = new SearchNumberDialog(MainActivity.this,adapter);
+                    sndia.show();
+                }
+            });
+        } catch (Exception ex) {}
 
 
     }

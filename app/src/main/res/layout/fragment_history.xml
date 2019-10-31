@@ -21,7 +21,8 @@
               android:layout_weight="7"
               android:textColor="@color/white"
               android:textSize="15sp"
-              android:text="800 Messages"
+              android:text=""
+        android:id="@+id/message_amount_txt"
               android:layout_marginLeft="2dp"/>
 
 
