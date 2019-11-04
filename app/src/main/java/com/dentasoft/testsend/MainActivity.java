@@ -1,27 +1,20 @@
 package com.dentasoft.testsend;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.ViewPager;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
-import com.dentasoft.testsend.adapters.ImageAdapter;
 import com.dentasoft.testsend.adapters.ListViewAdapter;
 import com.dentasoft.testsend.dialog.SearchHistoryDialog;
 import com.dentasoft.testsend.dialog.SearchNumberDialog;
@@ -40,16 +33,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         try {
            new Thread(() -> {
                DownloadNavHeader();
-               DownloadSliderImages();}
-               ).start();
+               DownloadSliderImages();
+               DownloadAboutImage();
+           }).start();
         } catch (Exception e) {}
-        while (Constants.slider_images == null || Constants.nav_header == null){}
+        while (Constants.slider_images == null || Constants.nav_header == null || Constants.about_image == null){}
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         InitMenu(findViewById(R.id.toolbar),null);
-        InitNavHeader();
+        onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_home));
 
+
+    }
+
+    private void DownloadAboutImage() {
+        try {
+            FtpService ftp = new FtpService(navigationView,Constants.IP);
+            Constants.about_image = ftp.fetchImage(Constants.ABOUT_RESOURCES_PATH,Constants.ABOUT_BACKGROUND_FILE);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void DownloadSliderImages() {
@@ -64,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void InitMenu(Toolbar toolbar, ListViewAdapter adapter) {
         if (toolbar == null){
-            toolbar = findViewById(R.id.toolbar);
+            toolbar = (Toolbar)getLayoutInflater().inflate(R.layout.toolbar_home,null);
         }
         setSupportActionBar(toolbar);
         drawer = findViewById(R.id.drawer_layout);
@@ -94,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
             });
         } catch (Exception ex) {}
+        InitNavHeader();
+
 
 
     }
@@ -121,7 +127,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        drawer.closeDrawer(GravityCompat.START);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        }
         switch(menuItem.getItemId()) {
             case R.id.nav_home:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new HomeFragment()).commit();

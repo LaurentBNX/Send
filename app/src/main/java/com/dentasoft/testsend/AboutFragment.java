@@ -65,17 +65,6 @@ public class AboutFragment extends Fragment {
     }
 
     private void InitBackgroundPicture(View v) {
-        new Thread(
-                () -> {
-                    FtpService ftp = new FtpService(v,Constants.IP);
-                    try {
-                        Constants.about_image = ftp.fetchImage(Constants.ABOUT_RESOURCES_PATH,Constants.ABOUT_BACKGROUND_FILE);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-        ).start();
-        while (Constants.about_image == null){}
         LinearLayout background = v.findViewById(R.id.company_details_background);
         Drawable bg = new BitmapDrawable(getResources(),Constants.about_image);
         background.setBackground(bg);
