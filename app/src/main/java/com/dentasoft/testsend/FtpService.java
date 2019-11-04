@@ -1,6 +1,7 @@
 package com.dentasoft.testsend;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -23,11 +24,13 @@ public class FtpService {
     private String password;
     private View view;
 
+
     public FtpService(View view, String server) {
+
         this.view = view;
         this.server = server;
-        this.user = Constants.userName;
-        this.password = Constants.passWord;
+        this.user = Constants.userName_edit;
+        this.password = Constants.passWord_edit;
     }
 
     public String fetchText(String filePath, String fileName) {
