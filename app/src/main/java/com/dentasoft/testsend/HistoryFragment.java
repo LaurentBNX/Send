@@ -2,14 +2,10 @@ package com.dentasoft.testsend;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -17,10 +13,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-
-import java.io.*;
-import java.lang.reflect.Array;
-import java.net.SocketException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,10 +22,6 @@ import java.util.*;
 import com.dentasoft.testsend.adapters.ListViewAdapter;
 import com.dentasoft.testsend.dialog.SearchHistoryDialog;
 import com.dentasoft.testsend.dialog.SearchNumberDialog;
-
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
 
 public class HistoryFragment extends Fragment {
     //  private ArrayList<HashMap> list;
@@ -46,6 +34,7 @@ public class HistoryFragment extends Fragment {
     ArrayList<String> historyTime = new ArrayList<>();
     private LinearLayout mToolbar_container;
     private ListViewAdapter mAdapter;
+    private ViewGroup mViewContainer;
 
 
     public HistoryFragment(){}
@@ -83,34 +72,26 @@ public class HistoryFragment extends Fragment {
         while (data.hasNextLine()) {
             String line = data.nextLine();
             String[] seperated = line.split("\\|");
-            if (seperated.length==3)
-            {
+            if (seperated.length == 3) {
                 sendNumber.add(seperated[0]);
                 sendMessage.add(seperated[1]);
                 historyTime.add(seperated[2]);
-
             }
-            else {
-                Log.e("Damage message", "Check the damage message: "+line);
-            }
-
-
         }
-
-        Log.e("Number of message", "onCreateView: "+sendMessage.size());
-
     }
 
     private void DownloadMessages(View v) {
-        new Thread() {
-            @Override
-            public void run() {
-                //  InitFTPServerSetting(v);
-                FtpService service = new FtpService(v,Constants.IP);
-                Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
-            }
-        }.start();
-        while (Constants.FtpContent.equals("")){}
+       if (Constants.FtpContent.equals("")) {
+           new Thread() {
+               @Override
+               public void run() {
+                   //  InitFTPServerSetting(v);
+                   FtpService service = new FtpService(v,Constants.IP);
+                   Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
+               }
+           }.start();
+           while (Constants.FtpContent.equals("")){}
+       }
     }
 
     public void DisplayMessages(View v) {
@@ -194,7 +175,15 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        ((LinearLayout)getActivity().findViewById(R.id.toolbar_container)).removeViewAt(0);
-        ((MainActivity)getActivity()).InitMenu(null,null);
+
+        mToolbar_container.removeViewAt(0);
+        Toolbar toolbar = (Toolbar)getActivity().getLayoutInflater().inflate(R.layout.toolbar_home,null,false);
+
+        toolbar.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        ));
+        mToolbar_container.addView(toolbar);
+        ((MainActivity)getActivity()).InitMenu(toolbar,null);
     }
 }

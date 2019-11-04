@@ -3,17 +3,15 @@ package com.dentasoft.testsend.adapters;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
+
 import com.dentasoft.testsend.Constants;
 import com.dentasoft.testsend.HistoryFragment;
 import com.dentasoft.testsend.MainActivity;
 import com.dentasoft.testsend.R;
-import com.dentasoft.testsend.dialog.SearchHistoryDialog;
 
 import java.util.ArrayList;
 
@@ -31,7 +29,6 @@ public class ListViewAdapter extends BaseAdapter {
 
 
     public ListViewAdapter(HistoryFragment parent,Context context, ArrayList<String> sendNumber, ArrayList<String> sendMessage, ArrayList<String> historyTime) {
-        //super();
         this.parent_view = parent;
         this.context = context;
         this.sendMessage = sendMessage;
@@ -129,7 +126,7 @@ public class ListViewAdapter extends BaseAdapter {
                     Constants.selected_messages.add(position);
                     if (counter == 1) {
                         container.removeViewAt(0);
-                        history_toolbar = (LinearLayout) inflater.inflate(R.layout.toolbar_history,null);
+                        history_toolbar = (LinearLayout) inflater.inflate(R.layout.toolbar_history_item_selected,null);
                         history_toolbar.setLayoutParams(new LinearLayout.LayoutParams(
                                 LinearLayout.LayoutParams.MATCH_PARENT,
                                 LinearLayout.LayoutParams.MATCH_PARENT
