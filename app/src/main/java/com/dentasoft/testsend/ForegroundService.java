@@ -117,21 +117,19 @@ public class ForegroundService extends Service {
         System.out.println("Enter background send SMS..");
 //        FtpService service = new FtpService(v,Constants.IP);
 //        Constants.SendFiles = service.fetchSMSToSend("/test");
-        try {
-        List<String>fileNames = new FetchSmsTask(null).execute().get();
-            final int[] i = {0};
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
-                        new SendSMSTask().execute(fileNames.get(i[0]));
-                        i[0]++;
+             try{
+                List<String>fileNames = new FetchSmsTask(null).execute().get();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         };
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
         timer.schedule(timerTask, 10000, 100000);
     }
 

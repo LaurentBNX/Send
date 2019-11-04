@@ -29,8 +29,10 @@ public class FtpService {
         this.user = Constants.userName;
         this.password = Constants.passWord;
     }
-
     public String fetchText(String filePath, String fileName) {
+        return this.fetchText(filePath,fileName,false);
+    }
+    public String fetchText(String filePath, String fileName,boolean deleteAtEnd) {
         String fullFileName = filePath + "/" + fileName;
         FTPClient client = new FTPClient();
         try {
@@ -63,6 +65,9 @@ public class FtpService {
             while ((ch = isr.read()) != -1)
                 fileContent.append((char) ch);
             String content = new String(fileContent.toString());
+            if (deleteAtEnd) {client.deleteFile(fullFileName);}
+            client.logout();
+            client.disconnect();
             return content;
         } catch (SocketException e) {
             e.printStackTrace();
@@ -169,7 +174,6 @@ public class FtpService {
                 String fileName = file.getName();
                // if (fileName.endsWith(".txt") && !fileName.contains("LOG")) {
                     if (fileName.endsWith(".txt") && fileName.contains("msg291")&& !fileName.contains("LOG")) {
-
                         result.add(fileName);
                     System.out.println("Fetched file name:  " + fileName);
                 }
@@ -196,18 +200,12 @@ public class FtpService {
         FTPClient client = new FTPClient();
         try {
             client.connect(server);
-            // Try to login and return the respective boolean value
-            boolean login = client.login(user, password);
-//            if (login)
-//                System.out.println("Login successful!");
-//            else System.out.println("Login failed");
-
             int replyCode = client.getReplyCode();
             if (!FTPReply.isPositiveCompletion(replyCode)) {
                 client.disconnect();
                 throw new IOException("ftp connection failed:" + replyCode);
             }
-            client.makeDirectory(fullFileName);
+           // client.makeDirectory(fullFileName);
             client.enterLocalPassiveMode();
 
             client.setFileType(FTP.BINARY_FILE_TYPE);
@@ -216,7 +214,7 @@ public class FtpService {
             client.changeWorkingDirectory(filePath);
 
             InputStream is = client.retrieveFileStream(fileName);
-            InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+
             BufferedInputStream bInf=new BufferedInputStream (is);
             int bytesRead;
             byte[] buffer=new byte[1024];
@@ -225,9 +223,9 @@ public class FtpService {
             {
                 fileContent= new String(buffer,0,bytesRead);
             }
+            bInf.close();
+            client.deleteFile(fullFileName);
 
-            client.logout();
-            client.disconnect();
             return fileContent;
         } catch (SocketException e) {
             e.printStackTrace();

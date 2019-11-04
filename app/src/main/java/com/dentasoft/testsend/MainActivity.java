@@ -1,6 +1,8 @@
 package com.dentasoft.testsend;
 
 import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,13 +24,22 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.dentasoft.testsend.adapters.ListViewAdapter;
+import com.dentasoft.testsend.alarm.SmsBroadcastReceiver;
 import com.dentasoft.testsend.dialog.SearchHistoryDialog;
 import com.dentasoft.testsend.dialog.SearchNumberDialog;
+import com.dentasoft.testsend.tasks.FetchSmsContentTask;
+import com.dentasoft.testsend.tasks.FetchSmsTask;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CustomerInfoFragment.OnFragmentInteractionListener {
     private DrawerLayout drawer;
@@ -54,16 +65,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         boolean pre_auto = preferences.getBoolean("autoSend",false);
         if (pre_auto){
             System.out.println("Send message automatically." );
-            mForegroundService = new ForegroundService();
-            mServiceIntent = new Intent(this, mForegroundService.getClass());
-            if (!isMyServiceRunning(mForegroundService.getClass())) {
-                startService(mServiceIntent);
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyyHHmmss");
+                List<String>fileNames = new FetchSmsTask(null).execute().get();
+                AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+
+                for (String fileName: fileNames) {
+                    FtpService ftp = new FtpService(null,Constants.IP);
+                    final String[] content = new String[]{""};
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                           content[0] = ftp.fetchText("/test",fileName,true);
+                        }
+                    }).start();
+                    while (content[0].equals("")) {}
+                    String raw_datetime = fileName.split("txt")[0].substring(3,fileName.length()-4);
+                    Calendar date = Calendar.getInstance();
+                    LocalDateTime send_date = LocalDateTime.parse(raw_datetime,formatter);
+                    date.set(Calendar.DAY_OF_MONTH,send_date.getDayOfMonth());
+                    date.set(Calendar.MONTH,send_date.getMonth().getValue());
+                    date.set(Calendar.YEAR,send_date.getYear());
+                    date.set(Calendar.HOUR,send_date.getHour());
+                    date.set(Calendar.MINUTE,send_date.getMinute());
+                    date.set(Calendar.SECOND,send_date.getSecond());
+                    Intent intent = new Intent(this, SmsBroadcastReceiver.class);
+                    intent.putExtra("content",content[0]);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP,date.getTimeInMillis(),pendingIntent);
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-        else {
-            System.out.println("Please manually send SMS.");
-        }
-        //
+
         InitMenu(findViewById(R.id.toolbar),null);
         onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_home));
 
@@ -72,11 +109,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void DownloadAboutImage() {
         try {
-            FtpService ftp = new FtpService(navigationView,Constants.IP);
-            Constants.about_image = ftp.fetchImage(Constants.ABOUT_RESOURCES_PATH,Constants.ABOUT_BACKGROUND_FILE);
+            FtpService ftp = new FtpService(navigationView, Constants.IP);
+            Constants.about_image = ftp.fetchImage(Constants.ABOUT_RESOURCES_PATH, Constants.ABOUT_BACKGROUND_FILE);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
     public void stopService (View view){
         Intent intent = new Intent(this, MyAccountFragment.class);
         stopService(intent);

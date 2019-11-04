@@ -2,16 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dentasoft.testsend">
 
-    <uses-permission android:name="android.permission.SEND_SMS"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <uses-permission-sdk-23 android:name="android.permission.SEND_SMS"/>
+    <uses-permission-sdk-23 android:name="android.permission.SEND_SMS" />
 
     <application
         android:allowBackup="true"
@@ -20,29 +20,34 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <receiver
-                android:name=".Restarter"
-                android:enabled="true"
-                android:exported="true"
-                android:label="RestartServiceWhenStopped">
-
+            android:name=".alarm.SmsBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
+        <receiver
+            android:name=".Restarter"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
             <intent-filter>
                 <action android:name="restartservice" />
             </intent-filter>
         </receiver>
 
-        <activity android:name=".MainActivity" android:screenOrientation="portrait" android:theme="@style/AppTheme.Launcher">
-         <intent-filter>
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Launcher">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-         </activity>
+        </activity>
 
         <service
-                android:name=".ForegroundService"
-                android:enabled="true"/>
-
+            android:name=".ForegroundService"
+            android:enabled="true" />
     </application>
 
 </manifest>
