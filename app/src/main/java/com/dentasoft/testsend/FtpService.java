@@ -175,6 +175,8 @@ public class FtpService {
                 }
             }
            // System.out.println("Size of files: "+ result.size());
+            client.logout();
+            client.disconnect();
 
             return result;
         } catch (SocketException e) {
@@ -224,7 +226,8 @@ public class FtpService {
                 fileContent= new String(buffer,0,bytesRead);
             }
 
-
+            client.logout();
+            client.disconnect();
             return fileContent;
         } catch (SocketException e) {
             e.printStackTrace();

@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <uses-permission-sdk-23 android:name="android.permission.SEND_SMS"/>
 
     <application
@@ -19,6 +21,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <receiver
+                android:name=".Restarter"
+                android:enabled="true"
+                android:exported="true"
+                android:label="RestartServiceWhenStopped">
+
+            <intent-filter>
+                <action android:name="restartservice" />
+            </intent-filter>
+        </receiver>
 
         <activity android:name=".MainActivity" android:screenOrientation="portrait" android:theme="@style/AppTheme.Launcher">
          <intent-filter>
@@ -26,6 +38,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
          </activity>
+
+        <service
+                android:name=".ForegroundService"
+                android:enabled="true"/>
+
     </application>
 
 </manifest>

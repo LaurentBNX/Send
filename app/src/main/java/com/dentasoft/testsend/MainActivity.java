@@ -1,5 +1,11 @@
 package com.dentasoft.testsend;
 
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.util.Log;
+import android.widget.Switch;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +33,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CustomerInfoFragment.OnFragmentInteractionListener {
     private DrawerLayout drawer;
     private NavigationView navigationView;
-
+    Intent mServiceIntent;
+    private ForegroundService mForegroundService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         try {
@@ -41,6 +48,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //
+        final SharedPreferences preferences= getSharedPreferences("user_setting", Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = preferences.edit();
+        boolean pre_auto = preferences.getBoolean("autoSend",false);
+        if (pre_auto){
+            System.out.println("Send message automatically." );
+            mForegroundService = new ForegroundService();
+            mServiceIntent = new Intent(this, mForegroundService.getClass());
+            if (!isMyServiceRunning(mForegroundService.getClass())) {
+                startService(mServiceIntent);
+            }
+        }
+        else {
+            System.out.println("Please manually send SMS.");
+        }
+        //
         InitMenu(findViewById(R.id.toolbar),null);
         onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_home));
 
@@ -54,6 +77,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    public void stopService (View view){
+        Intent intent = new Intent(this, MyAccountFragment.class);
+        stopService(intent);
     }
 
     private void DownloadSliderImages() {
@@ -158,4 +184,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onFragmentInteraction(Uri uri) {
 
     }
+
+//    public void startBackgroundService(){
+//        if (isMyServiceRunning(service.class)) {
+//            System.out.println("Stoped");
+//            stopService(new Intent(MainActivity.this, service.class));
+//        } else {
+//            System.out.println("Started");
+//            startService(new Intent(MainActivity.this, service.class));
+//        }
+//    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("Service status", "Running");
+                return true;
+            }
+        }
+        Log.i ("Service status", "Not running");
+        return false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopService(mServiceIntent);
+        super.onDestroy();
+    }
+
 }

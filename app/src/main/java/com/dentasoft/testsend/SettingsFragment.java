@@ -21,7 +21,7 @@ public class SettingsFragment extends Fragment {
     private Switch autoSend;
     private RadioButton french_button, dutch_button, english_button;
     public SettingsFragment() {}
-
+    public boolean pre_auto;
     public static AboutFragment newInstance(String param1, String param2) {
         AboutFragment fragment = new AboutFragment();
         Bundle args = new Bundle();
@@ -29,31 +29,26 @@ public class SettingsFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         getActivity().setTitle("Settings");
         View v = inflater.inflate(R.layout.fragment_settings, container, false);
-        autoSend = (Switch)v.findViewById(R.id.language_switch);
+        autoSend = (Switch)v.findViewById(R.id.auto_send_switch);
         french_button = (RadioButton) v.findViewById(R.id.French_button);
         dutch_button = (RadioButton)v.findViewById(R.id.Dutch_button);
         english_button = (RadioButton)v.findViewById(R.id.English_button);
         final RadioGroup rg = (RadioGroup)v.findViewById(R.id.rg_button);
-
         save_setting = (Button)v.findViewById(R.id.save_setting_button);
-
 
         final SharedPreferences preferences= v.getContext().getSharedPreferences("user_setting", Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = preferences.edit();
-        Boolean pre_auto = preferences.getBoolean("autoSend",false);
+        pre_auto = preferences.getBoolean("autoSend",false);
         int pre_language = preferences.getInt("Language",0);
         System.out.println("previous setting:  "+ pre_auto+"  "+ pre_language);
         if (preferences.getBoolean("autoSend",false)){

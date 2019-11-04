@@ -84,28 +84,24 @@ public class MyAccountFragment extends Fragment {
                     Constants.SendFiles = service.fetchSMSToSend("/test");
                     //add
                     Constants.SendContent = new ArrayList<>();
-                for (String file: Constants.SendFiles) {
-                        //System.out.println("Fetched file name !!: "+file);
-                        Constants.SMSContent = service.fetchSMSText("/test",file);
-                        System.out.println("SendFiles:  "+ Constants.SMSContent);
-                        Constants.SendContent.add(Constants.SMSContent);
-                }
+
             }
         }.start();
 
         while (Constants.SendFiles == null){}
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                FtpService service = new FtpService(v,Constants.IP);
-//                Constants.SendContent = new ArrayList<>();
-//                for (String file: Constants.SendFiles) {
-//                Constants.SendContent.add(service.fetchText("/test", file));
-//                    System.out.println("Second open file:  "+ Constants.SendContent);
-//
-//               }
-//            }
-//            }.start();
+        new Thread() {
+            @Override
+            public void run() {
+                FtpService service = new FtpService(v,Constants.IP);
+                Constants.SendContent = new ArrayList<>();
+                for (String file: Constants.SendFiles) {
+                    //System.out.println("Fetched file name !!: "+file);
+                    Constants.SMSContent = service.fetchSMSText("/test",file);
+                    System.out.println("SendFiles:  "+ Constants.SMSContent);
+                    Constants.SendContent.add(Constants.SMSContent);
+                }
+            }
+            }.start();
 //        while (Constants.SendContent == null){}
 //        while (Constants.SendContent.size()!=5){}
         sms_button.setOnClickListener(new View.OnClickListener() {
@@ -132,7 +128,7 @@ public class MyAccountFragment extends Fragment {
 
 
         for (String line:Constants.SendContent)
-         {
+        {
             String[] s = line.split("=");
             String[] ss = s[0].split("\"");
             String[] contentandtime = s[1].split("->");
@@ -142,14 +138,14 @@ public class MyAccountFragment extends Fragment {
             Date currentTime = Calendar.getInstance().getTime();
             sendTime.add(String.valueOf(currentTime));
 
-             System.out.println("Message part: "+ contentandtime[0]);
-             System.out.println("Send to this number: "+ss[ss.length-1]);
-             System.out.println("Send time: "+ String.valueOf(currentTime));
+            System.out.println("Message part: "+ contentandtime[0]);
+            System.out.println("Send to this number: "+ss[ss.length-1]);
+            System.out.println("Send time: "+ String.valueOf(currentTime));
 
             try {
                 SmsManager smsManager = SmsManager.getDefault();
                 System.out.println();
-                smsManager.sendTextMessage("0032476546869",null,contentandtime[0],null,null);
+                smsManager.sendTextMessage(ss[ss.length-1],null,contentandtime[0],null,null);
                 Toast toast = Toast.makeText(getContext(),"Sms sent!!!",Toast.LENGTH_LONG);
                 toast.show();
 
@@ -159,16 +155,15 @@ public class MyAccountFragment extends Fragment {
             }
 
             if (i == 10) {break;}
-                if (counter_sms==3){
+            if (counter_sms==3){
                 Log.e("Notification", "Reach 8000 sms limitation, please change SIM card.");
                 counter_sms = 0;
                 break;
             }
 
-             i++;
-             counter_sms++;
+            i++;
+            counter_sms++;
         }
-
     }
 }
 
