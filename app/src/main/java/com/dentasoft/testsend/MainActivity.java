@@ -48,20 +48,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ForegroundService mForegroundService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        try {
-           new Thread(() -> {
-               DownloadNavHeader();
-               DownloadSliderImages();
-               DownloadAboutImage();
-           }).start();
-        } catch (Exception e) {}
-        while (Constants.slider_images == null || Constants.nav_header == null || Constants.about_image == null){}
+        final SharedPreferences preferences= getSharedPreferences("user_setting", Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = preferences.edit();
+        Constants.time_slot = preferences.getString("TimeSlot", "");
+        Constants.IP_edit = preferences.getString("IPAddress","");
+        Constants.userName_edit = preferences.getString("UserName","");
+        Constants.passWord_edit = preferences.getString("PassWord","");
+        System.out.println("UserName: "+ Constants.userName_edit+"  PassWord:  "+Constants.passWord_edit);
+        if (!Constants.IP_edit.equals("")) {
+            try {
+                new Thread(() -> {
+                    DownloadNavHeader();
+                    DownloadSliderImages();
+                    DownloadAboutImage();
+                }
+                ).start();
+                while (Constants.slider_images == null || Constants.nav_header == null || Constants.about_image == null){}
+            } catch (Exception e) {}
+        }
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //
-        final SharedPreferences preferences= getSharedPreferences("user_setting", Context.MODE_PRIVATE);
-        final SharedPreferences.Editor editor = preferences.edit();
+
+
         boolean pre_auto = preferences.getBoolean("autoSend",false);
         if (pre_auto){
             System.out.println("Send message automatically." );
@@ -223,15 +232,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-//    public void startBackgroundService(){
-//        if (isMyServiceRunning(service.class)) {
-//            System.out.println("Stoped");
-//            stopService(new Intent(MainActivity.this, service.class));
-//        } else {
-//            System.out.println("Started");
-//            startService(new Intent(MainActivity.this, service.class));
-//        }
-//    }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);

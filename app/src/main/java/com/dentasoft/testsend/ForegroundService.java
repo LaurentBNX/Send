@@ -71,24 +71,6 @@ public class ForegroundService extends Service {
         return START_STICKY;
     }
 
-    public void startSendSMS() {
-        System.out.println("Enter background send SMS..");
-        FtpService service = new FtpService(v,Constants.IP);
-        Constants.SendFiles = service.fetchSMSToSend("/test");
-        Constants.SendContent = new ArrayList<>();
-        for (String file: Constants.SendFiles) {
-            Constants.SMSContent = service.fetchSMSText("/test", file);
-            System.out.println("SendFiles:  " + Constants.SMSContent);
-            Constants.SendContent.add(Constants.SMSContent);
-        }
-        MyAccountFragment sendSMS = new MyAccountFragment();
-        try {
-
-            sendSMS.sendMessage(v);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {

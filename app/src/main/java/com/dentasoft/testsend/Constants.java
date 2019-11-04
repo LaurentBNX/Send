@@ -18,6 +18,11 @@ public class Constants {
             public static final String userName = "sms@soft4all.be";
             public static final String passWord = "@P_r6CZ#SQ*d";
 
+            public static String time_slot = "";
+            public static String IP_edit = "";
+            public static String userName_edit = "";
+            public static String passWord_edit = "";
+
 
             public static final String ABOUT_RESOURCES_PATH = "/_webService_/about/images";
             public static final String ABOUT_BACKGROUND_FILE = "backgroud.jpg";

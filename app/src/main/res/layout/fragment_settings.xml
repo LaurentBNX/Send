@@ -22,6 +22,57 @@
         android:layout_height="70dp"
         android:id="@+id/auto_send_switch"/>
     <TextView
+            android:text="Time slot(s)"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:textColor="@color/black"/>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:hint="Time slot here..."
+            android:id="@+id/edit_timeSlot"/>
+    <TextView
+            android:text="IP address"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:textColor="@color/black"/>
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:hint="Your IP address here..."
+            android:id="@+id/edit_IP_address"/>
+    <TextView
+            android:text="User Name"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:textColor="@color/black"/>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:hint="Your Username here..."
+            android:id="@+id/edit_username"/>
+    <TextView
+            android:text="Password"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:textColor="@color/black"/>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:inputType="textPassword"
+            android:hint="Your Password here..."
+            android:id="@+id/edit_password"/>
+
+    <TextView
         android:text="Select Language:"
         android:layout_width="match_parent"
         android:layout_height="52dp" android:id="@+id/textLanguage"/>
@@ -53,6 +104,7 @@
             android:layout_height="wrap_content"
             android:text="English" />
     </RadioGroup>
+
 
     <TextView
         android:id="@+id/line"
