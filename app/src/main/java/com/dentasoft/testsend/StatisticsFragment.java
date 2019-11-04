@@ -1,7 +1,6 @@
 package com.dentasoft.testsend;
 
 import android.app.DatePickerDialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,36 +15,40 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.dentasoft.testsend.adapters.DateLabelFormatter;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.LabelFormatter;
-import com.jjoe64.graphview.LegendRenderer;
-import com.jjoe64.graphview.ValueDependentColor;
-import com.jjoe64.graphview.Viewport;
-import com.jjoe64.graphview.helper.StaticLabelsFormatter;
-import com.jjoe64.graphview.series.BarGraphSeries;
-import com.jjoe64.graphview.series.DataPoint;
+import com.dentasoft.testsend.Constants;
+import com.dentasoft.testsend.FtpService;
+import com.dentasoft.testsend.R;
+import com.dentasoft.testsend.formatter.DateXAxisFormatter;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class StatisticsFragment extends Fragment {
 
-    private List<String[]> mLines = new ArrayList<>();;
+    private BarChart mChart;
+    private List<String[]> mLines = new ArrayList<>();
+    private HashMap<Integer,String> mDates_map;
+    private Button mFilterButton;
+
+
+    private EditText mToDate;
+    private EditText mFromDate;
     final Calendar from_calendar = Calendar.getInstance();
     final Calendar to_calendar = Calendar.getInstance();
-    private EditText mFromDate;
-    private EditText mToDate;
+
 
     DatePickerDialog.OnDateSetListener from_date = new DatePickerDialog.OnDateSetListener() {
 
@@ -73,9 +76,9 @@ public class StatisticsFragment extends Fragment {
         }
 
     };
-
-    private DataPoint[] mAllPoints;
-    private GraphView mGraph;
+    private View mView;
+    private BarDataSet mFullDataSet;
+    private ArrayList<BarEntry> mAllEntries;
 
     public StatisticsFragment(){}
 
@@ -87,25 +90,70 @@ public class StatisticsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_statistics,container,false);
+        mView = inflater.inflate(R.layout.fragment_statistics,container,false);
         getActivity().setTitle("Statistics");
-        Init(v);
-        InitDatePicker(v);
-        return v;
+        InitViews(mView);
+        InitChart(mView);
+
+        return mView;
     }
 
-    private void InitDatePicker(View v) {
+    private void InitViews(View v) {
+        mFilterButton = v.findViewById(R.id.statistics_btn_search);
         mFromDate = v.findViewById(R.id.datepicker_min_date);
         mToDate = v.findViewById(R.id.datepicker_max_date);
+        InitDatePicker(v);
+        mFilterButton.setOnClickListener(FilterChart);
+    }
 
+    private void InitChart(View v) {
+        mChart = v.findViewById(R.id.statistics_graph);
+        mChart.setPinchZoom(false);
+        mChart.getDescription().setEnabled(false);
+
+        XAxis xAxis = mChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f );
+        xAxis.setLabelCount(5,false);
+
+        DownloadMessageData(v);
+        HashMap<Integer,String> date_dictionary = InitGraphData(v);
+        xAxis.setValueFormatter(new DateXAxisFormatter(date_dictionary));
+
+        YAxis yAxis = mChart.getAxisLeft();
+        yAxis.setDrawGridLines(false);
+        yAxis.setLabelCount(5);
+        yAxis.setAxisMinimum(0f);
+
+
+    }
+
+    private HashMap<Integer,String> InitGraphData(View v) {
+
+        mAllEntries = extractDataPoints(mLines);
+        mFullDataSet = new BarDataSet(mAllEntries,"The year 2019");
+
+        BarData data = new BarData(mFullDataSet);
+        data.setBarWidth(0.85f);
+        if (mChart.getData() != null) {
+            mChart.getData().clearValues();
+        }
+        mChart.setData(data);
+        mChart.setFitBars(true);
+        mChart.invalidate();
+
+        return mDates_map;
+    }
+
+    public void InitDatePicker(View v) {
         mFromDate.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                        if (hasFocus) {
-                            new DatePickerDialog(v.getContext(),from_date, from_calendar.get(Calendar.YEAR), from_calendar.get(Calendar.MONTH),
-                                    from_calendar.get(Calendar.DAY_OF_MONTH)).show();
-                            updateFromLabel();
-                        }
+                if (hasFocus) {
+                    new DatePickerDialog(v.getContext(),from_date, from_calendar.get(Calendar.YEAR), from_calendar.get(Calendar.MONTH),
+                            from_calendar.get(Calendar.DAY_OF_MONTH)).show();
+                }
             }
 
         });
@@ -115,57 +163,13 @@ public class StatisticsFragment extends Fragment {
                 if (hasFocus) {
                     new DatePickerDialog(v.getContext(),to_date, to_calendar.get(Calendar.YEAR), to_calendar.get(Calendar.MONTH),
                             to_calendar.get(Calendar.DAY_OF_MONTH)).show();
-                        updateToLabel();
                 }
             }
 
-        });
-
-        Button search_date = v.findViewById(R.id.statistics_btn_search);
-        search_date.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String start_date = mFromDate.getText().toString();
-                String end_date = mToDate.getText().toString();
-                int date_gap = 0;
-                if (start_date.equals("") || end_date.equals("")) {
-                    Toast.makeText(v.getContext(),"Please pick a start and end date!",Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                mGraph.getSeries().remove(0);
-                List<DataPoint> newPoints =  Arrays.asList(mAllPoints).stream().filter(point -> {
-                    try {
-                        Date point_date = new Date((long) point.getX());
-                        Calendar cal = Calendar.getInstance();
-                        cal.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(start_date));
-                        cal.add(Calendar.HOUR,-1);
-                        Date start_bound = cal.getTime();
-                        cal.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(end_date));
-                        cal.add(Calendar.HOUR,1);
-                        Date end_bound = cal.getTime();
-
-                        boolean isafter = point_date.after(start_bound);
-                        boolean isbefore = point_date.before(end_bound);
-                        return isafter && isbefore;
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    return false;
-                }).collect(Collectors.toList());
-                DataPoint[] newSeries = newPoints.toArray(new DataPoint[newPoints.size()]);
-                BarGraphSeries series = new BarGraphSeries(newSeries);
-                InitSeries(series);
-                mGraph.addSeries(series);
-                mGraph.getViewport().setMinX(newSeries[0].getX());
-
-                mGraph.getViewport().setMaxX(newSeries[newSeries.length-1].getX());
-                InitHorizontalLabels(newSeries);
-
-            }
         });
     }
 
-    private void Init(View v) {
+    private void DownloadMessageData(View v) {
         TextView txt_amount_of_sms = v.findViewById(R.id.statistics_txt_amount_of_sms);
         if (Constants.FtpContent.equals("")) {
             new Thread(() -> {   FtpService ftp = new FtpService(v,Constants.IP);
@@ -178,115 +182,95 @@ public class StatisticsFragment extends Fragment {
         while (data.hasNextLine()) {
             String line = data.nextLine();
             String [] seperated = line.split("\\|");
-           if (seperated.length == 3) {
-               mLines.add(seperated);
-           }
+            if (seperated.length == 3) {
+                mLines.add(seperated);
+            }
         }
         txt_amount_of_sms.setText(mLines.size()+"");
-        mGraph = v.findViewById(R.id.statistics_graph);
-        mAllPoints = extractDataPoints(mLines);
-        BarGraphSeries<DataPoint> series = new BarGraphSeries<DataPoint>(mAllPoints);
-
-        InitSeries(series);
-
-        mGraph.getLegendRenderer().setVisible(true);
-        mGraph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
-        mGraph.getGridLabelRenderer().setHumanRounding(false);
-        mGraph.getViewport().setScrollable(true);
-
-        mGraph.getViewport().setXAxisBoundsManual(true);
-        mGraph.getViewport().setMinX(mAllPoints[0].getX());
-
-        mGraph.getViewport().setMaxX(mAllPoints[5].getX());
-        InitHorizontalLabels(mAllPoints);
-
-        mGraph.getViewport().setYAxisBoundsManual(true);
-        mGraph.getViewport().setMinY(0);
-        mGraph.getViewport().setMaxY(85);
-
-        mGraph.getGridLabelRenderer().setHorizontalLabelsAngle(135);
-
-        mGraph.addSeries(series);
     }
 
+    private ArrayList<BarEntry> extractDataPoints(List<String[]> lines) {
+        int counter = 0;
+        mDates_map = new HashMap<>();
+        ArrayList<BarEntry> result = new ArrayList<>();
+        List<Date> dates = new ArrayList<>();
 
-    public void InitSeries(BarGraphSeries series) {
-        series.setValueDependentColor(new ValueDependentColor<DataPoint>() {
-            @Override
-            public int get(DataPoint data) {
-                return Color.rgb((int) data.getX()*255/4, (int) Math.abs(data.getY()*255/6), 100);
+        for (int i = 0; i < lines.size(); i++) {
+            try {
+                String rawdate = lines.get(i)[2].trim().split(" ")[0];
+                Date date =new SimpleDateFormat("dd/MM/yyyy").parse(rawdate);
+
+                if (dates.stream().noneMatch(d -> d.equals(date))) {
+                    dates.add(date);
+                    long count = lines.stream().filter(l -> l[2].trim().startsWith(rawdate)).count();
+                    result.add(new BarEntry(counter,(float)count));
+                    mDates_map.put(counter++,new SimpleDateFormat("dd-MM-yyyy").format(date));
+
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-        });
-        series.setSpacing(10);
-        series.setAnimated(true);
 
-        // draw values on top
-        series.setDrawValuesOnTop(true);
-        series.setValuesOnTopColor(Color.RED);
-        //series.setValuesOnTopSize(50);
-    }
-
-    public void InitHorizontalLabels(DataPoint[] points) {
-        DateLabelFormatter labels = new DateLabelFormatter(mGraph);
-        String [] lab = new String[points.length];
-        for (int i = 0; i < points.length; i++) {
-            lab[i] = (long)points[i].getX()+"";
         }
-        labels.setHorizontalLabels(lab);
-        mGraph.getGridLabelRenderer().setLabelFormatter(labels);
+
+        return result;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private DataPoint[] extractDataPoints(List<String[]> lines) {
-           List<DataPoint> result = new ArrayList<>();
-           List<Date> dates = new ArrayList<>();
-
-       for (int i = 0; i < lines.size(); i++) {
-           try {
-               String rawdate = lines.get(i)[2].trim().split(" ")[0];
-               Date date =new SimpleDateFormat("dd/MM/yyyy").parse(rawdate);
-
-             if (dates.stream().noneMatch(d -> d.equals(date))) {
-                 dates.add(date);
-                 long count = lines.stream().filter(l -> l[2].trim().startsWith(rawdate)).count();
-                 result.add(new DataPoint(date,count));
-
-             }
-           } catch (ParseException e) {
-               e.printStackTrace();
-           }
-
-       }
-
-       return result.toArray(new DataPoint[result.size()]);
-    }
-
 
     private void updateFromLabel() {
         String myFormat = "dd/MM/yyyy"; //In which you need put here
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
         mFromDate.setText(sdf.format(from_calendar.getTime()));
     }
+
     private void updateToLabel() {
         String myFormat = "dd/MM/yyyy"; //In which you need put here
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
         mToDate.setText(sdf.format(to_calendar.getTime()));
     }
+
+    private ArrayList<BarEntry> filterFullDataSet( ArrayList<BarEntry> allEntries,String start,String end) {
+        int startIndex = 0;
+        int endIndex = allEntries.size()-1;
+
+        try {
+            Date start_date = new SimpleDateFormat("dd/MM/yyyy").parse(start);
+            Date end_date = new SimpleDateFormat("dd/MM/yyyy").parse(end);
+
+            for (int i = 1; i < mDates_map.size(); i++) {
+                Date date = new SimpleDateFormat("dd-MM-yyyy").parse(mDates_map.get(i));
+                Date prev_date = new SimpleDateFormat("dd-MM-yyyy").parse(mDates_map.get(i-1));
+                if (start_date.compareTo(date) < 1 && start_date.compareTo(prev_date) > 0) {
+                    startIndex = i;
+                }
+
+            }
+            for (int i = 0; i < mDates_map.size()-1; i++) {
+                Date date = new SimpleDateFormat("dd-MM-yyyy").parse(mDates_map.get(i));
+                Date next_date = new SimpleDateFormat("dd-MM-yyyy").parse(mDates_map.get(i+1));
+                if (end_date.compareTo(date) > -1 && end_date.compareTo(next_date) < 0) {
+                    endIndex = i;
+                }
+
+            }
+        } catch (ParseException ex) {ex.printStackTrace();}
+        return new ArrayList<>(allEntries.subList(startIndex,endIndex+1));
+    }
+
+    public View.OnClickListener FilterChart = (v) -> {
+        String start_date = mFromDate.getText().toString().trim();
+        String end_date = mToDate.getText().toString().trim();
+        if (start_date.equals("") || end_date.equals("")) {
+            Toast.makeText(getContext(),R.string.toast_message_date_invalid,Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ArrayList<BarEntry> newDataSet = filterFullDataSet(mAllEntries,start_date,end_date);
+
+        BarDataSet dataSet = new BarDataSet(newDataSet, "Custom date range");
+        BarData data = new BarData(dataSet);
+        data.setBarWidth(0.85f);
+        mChart.setData(data);
+        mChart.invalidate();
+    };
+
+
 }
