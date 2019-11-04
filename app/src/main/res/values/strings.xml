@@ -40,4 +40,6 @@
     <string name="quit">Quit</string>
     <string name="send_sms">Send SMS</string>
 
+    <string name="toast_message_date_invalid">Please fill in both date ranges!</string>
+
 </resources>

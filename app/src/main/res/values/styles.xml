@@ -16,8 +16,7 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
     <style name="AppTheme.Launcher">
-    <item name="android:windowBackground">@mipmap/splash_screen</item>
-
+    <item name="android:windowBackground">@drawable/splash</item>
     </style>
 
 </resources>

@@ -4,7 +4,7 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_height="match_parent">
+    android:layout_height="60dp">
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,7 +18,7 @@
 
 
        <LinearLayout
-           android:layout_width="100dp"
+           android:layout_width="150dp"
            android:layout_height="match_parent"
            android:layout_gravity="end">
            <ImageView
@@ -26,7 +26,11 @@
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
                android:src="@drawable/ic_search"
-               android:layout_marginTop="8dp"
+               android:scaleX="1.5"
+               android:scaleY="1.5"
+                android:layout_marginTop="16dp"
+               android:layout_marginLeft="12dp"
+               android:layout_marginRight="25dp"
 
                />
 
@@ -36,7 +40,10 @@
                android:layout_height="wrap_content"
                android:layout_marginLeft="30dp"
                android:src="@drawable/ic_phone"
-               android:layout_marginTop="8dp"
+               android:scaleX="1.5"
+               android:scaleY="1.5"
+               android:layout_marginTop="16dp"
+
                />
 
        </LinearLayout>
