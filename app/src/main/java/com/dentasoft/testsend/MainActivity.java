@@ -1,13 +1,11 @@
 package com.dentasoft.testsend;
 
-import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
-import android.widget.Switch;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,41 +19,40 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.dentasoft.testsend.adapters.ListViewAdapter;
 import com.dentasoft.testsend.alarm.SmsBroadcastReceiver;
 import com.dentasoft.testsend.dialog.SearchHistoryDialog;
 import com.dentasoft.testsend.dialog.SearchNumberDialog;
-import com.dentasoft.testsend.tasks.FetchSmsContentTask;
 import com.dentasoft.testsend.tasks.FetchSmsTask;
+import com.dentasoft.testsend.util.Mapper;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CustomerInfoFragment.OnFragmentInteractionListener {
     private DrawerLayout drawer;
     private NavigationView navigationView;
     Intent mServiceIntent;
-    private ForegroundService mForegroundService;
+    private SharedPreferences mPreferences;
+    private AlarmManager mAlarmManager;
+    private Timer mTimer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final SharedPreferences preferences= getSharedPreferences("user_setting", Context.MODE_PRIVATE);
-        final SharedPreferences.Editor editor = preferences.edit();
-        Constants.time_slot = preferences.getString("TimeSlot", "");
-        Constants.IP_edit = preferences.getString("IPAddress","");
-        Constants.userName_edit = preferences.getString("UserName","");
-        Constants.passWord_edit = preferences.getString("PassWord","");
-        System.out.println("UserName: "+ Constants.userName_edit+"  PassWord:  "+Constants.passWord_edit);
-        if (!Constants.IP_edit.equals("")) {
+        InitPreferences();
+        if (!Constants.IP.equals("")) {
             try {
                 new Thread(() -> {
                     DownloadNavHeader();
@@ -69,69 +66,90 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-        boolean pre_auto = preferences.getBoolean("autoSend",false);
+        boolean pre_auto = mPreferences.getBoolean("autoSend",false);
         if (pre_auto){
-            System.out.println("Send message automatically." );
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyyHHmmss");
-                List<String>fileNames = new FetchSmsTask(null).execute().get();
-                AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-
-                for (String fileName: fileNames) {
-                    FtpService ftp = new FtpService(null,Constants.IP);
-                    final String[] content = new String[]{""};
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                           content[0] = ftp.fetchText("/test",fileName,true);
-                        }
-                    }).start();
-                    while (content[0].equals("")) {}
-                    String raw_datetime = fileName.split("txt")[0].substring(3,fileName.length()-4);
-                    Calendar date = Calendar.getInstance();
-                    LocalDateTime send_date = LocalDateTime.parse(raw_datetime,formatter);
-                    date.set(Calendar.DAY_OF_MONTH,send_date.getDayOfMonth());
-                    date.set(Calendar.MONTH,send_date.getMonth().getValue());
-                    date.set(Calendar.YEAR,send_date.getYear());
-                    date.set(Calendar.HOUR,send_date.getHour());
-                    date.set(Calendar.MINUTE,send_date.getMinute());
-                    date.set(Calendar.SECOND,send_date.getSecond());
-                    Intent intent = new Intent(this, SmsBroadcastReceiver.class);
-                    intent.putExtra("content",content[0]);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-                    alarmManager.set(AlarmManager.RTC_WAKEUP,date.getTimeInMillis(),pendingIntent);
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+           InitAutomaticSmsService();
         }
 
         InitMenu(findViewById(R.id.toolbar),null);
-        onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_home));
+        NavigateToHome();
+    }
 
 
+    public void stopAutomaticService() {
+        mTimer.cancel();
+    }
+    public void InitAutomaticSmsService() {
+        mAlarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+        mTimer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    List<String> fileNames = new FetchSmsTask(null).execute().get();
+
+                   for(String fileName: fileNames) {
+
+                       FtpService ftp = new FtpService(MainActivity.this, Constants.IP);
+                       final String[] content = new String[]{""};
+                       new Thread(new Runnable() {
+                           @Override
+                           public void run() {
+                               content[0] = ftp.fetchText(Constants.USER_ID, fileName, true);
+                           }
+                       }).start();
+                       while (content[0].equals("")) {
+                       }
+                       String raw_datetime = fileName.split("txt")[0].substring(3, fileName.length() - 4);
+                       Calendar date = Calendar.getInstance();
+                       LocalDateTime send_date = Mapper.mapStringToDateTime(raw_datetime);
+                       date.set(Calendar.DAY_OF_MONTH, send_date.getDayOfMonth());
+                       date.set(Calendar.MONTH, send_date.getMonth().getValue() - 1);
+                       date.set(Calendar.YEAR, send_date.getYear());
+                       date.set(Calendar.HOUR_OF_DAY, send_date.getHour());
+                       date.set(Calendar.MINUTE, send_date.getMinute());
+                       date.set(Calendar.SECOND, send_date.getSecond());
+
+                       Intent intent = new Intent(MainActivity.this, SmsBroadcastReceiver.class);
+                       intent.putExtra("content", content[0]);
+                       PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, (int)System.currentTimeMillis()+ new Random().nextInt(10), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                       mAlarmManager.set(AlarmManager.RTC_WAKEUP, date.toInstant().toEpochMilli(), pendingIntent);
+                   }
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        };
+        mTimer.schedule(timerTask,1,Constants.TIME_SLOT * 1000);
+
+    }
+
+    private void InitPreferences() {
+        mPreferences = getSharedPreferences("user_setting", Context.MODE_PRIVATE);
+        Constants.TIME_SLOT = mPreferences.getInt("auto_sms_timeslot", 10);
+        Constants.IP = mPreferences.getString("ftp_ip","193.70.45.74");
+        Constants.USERNAME = mPreferences.getString("ftp_username","sms@soft4all.be");
+        Constants.PASSWORD = mPreferences.getString("ftp_password","@P_r6CZ#SQ*d");
+        Constants.USER_ID = "/".concat(mPreferences.getString("ftp_user_id","test"));
+        Constants.SEND_SMS_INTERVAL = mPreferences.getInt("manual_sms_timeslot",1);
     }
 
     private void DownloadAboutImage() {
         try {
-            FtpService ftp = new FtpService(navigationView, Constants.IP);
+            FtpService ftp = new FtpService(this, Constants.IP);
             Constants.about_image = ftp.fetchImage(Constants.ABOUT_RESOURCES_PATH, Constants.ABOUT_BACKGROUND_FILE);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
-    public void stopService (View view){
-        Intent intent = new Intent(this, MyAccountFragment.class);
-        stopService(intent);
-    }
 
     private void DownloadSliderImages() {
         try {
-            FtpService ftp = new FtpService(navigationView,Constants.IP);
+            FtpService ftp = new FtpService(this,Constants.IP);
             List<Bitmap> slider_images = new ArrayList<>();
             slider_images.addAll(ftp.fetchImages(Constants.HOME_SLIDER_IMG_PATH));
             Constants.slider_images = slider_images.toArray(new Bitmap[5]);
@@ -172,14 +190,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             });
         } catch (Exception ex) {}
         InitNavHeader();
-
-
-
     }
 
-
     public void DownloadNavHeader() {
-        FtpService ftp = new FtpService(navigationView,Constants.IP);
+        FtpService ftp = new FtpService(this,Constants.IP);
         try {
             Constants.nav_header = ftp.fetchImage(Constants.MENU_IMAGES_PATH,Constants.MENU_NAV_HEADER_FILE);
         } catch (IOException e) {
@@ -226,24 +240,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return true;
     }
+    public void NavigateToHome() {
+        onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_home));
+    }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
 
     }
 
-
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                Log.i ("Service status", "Running");
-                return true;
-            }
-        }
-        Log.i ("Service status", "Not running");
-        return false;
-    }
 
     @Override
     protected void onDestroy() {

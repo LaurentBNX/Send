@@ -10,11 +10,7 @@
             android:background="@color/orange"
             >
 
-        <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
-                android:src="@drawable/ic_cancel"/>
+
 
         <TextView android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
@@ -27,19 +23,14 @@
                       android:orientation="horizontal"
                       android:gravity="end"
                       >
-            <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:scaleX="1.5"
-                    android:scaleY="1.5"
-                    android:src="@drawable/ic_delete"
-                    android:layout_marginRight="40dp"/>
+
 
             <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                     android:scaleX="1.5"
-                        android:scaleY="1.5"
+                    android:id="@+id/history_share_selected"
+                    android:scaleX="1.5"
+                    android:scaleY="1.5"
                     android:layout_marginRight="15dp"
                     android:src="@drawable/ic_share"/>
         </LinearLayout>

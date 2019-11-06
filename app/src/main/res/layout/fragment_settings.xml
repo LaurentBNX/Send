@@ -22,7 +22,7 @@
         android:layout_height="70dp"
         android:id="@+id/auto_send_switch"/>
     <TextView
-            android:text="Time slot(s)"
+            android:text="Check for new sms (automatic)"
             android:layout_width="match_parent"
             android:layout_height="32dp"
             android:textColor="@color/black"/>
@@ -31,8 +31,23 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            android:hint="Time slot here..."
+            android:inputType="number"
+            android:hint="Interval between server calls (seconds)"
             android:id="@+id/edit_timeSlot"/>
+    <TextView
+        android:text="Send new SMS after (manual)"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:textColor="@color/black"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:inputType="number"
+        android:hint="Interval between sent texts (seconds)"
+        android:id="@+id/edit_send_sms_interval"/>
+
     <TextView
             android:text="IP address"
             android:layout_width="match_parent"
@@ -44,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            android:hint="Your IP address here..."
+            android:hint="193.74.45.70"
             android:id="@+id/edit_IP_address"/>
     <TextView
             android:text="User Name"
@@ -56,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            android:hint="Your Username here..."
+            android:text="sms@soft4all.be"
             android:id="@+id/edit_username"/>
     <TextView
             android:text="Password"
@@ -69,7 +84,7 @@
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
             android:inputType="textPassword"
-            android:hint="Your Password here..."
+            android:text="\@P_r6CZ#SQ*d"
             android:id="@+id/edit_password"/>
 
     <TextView

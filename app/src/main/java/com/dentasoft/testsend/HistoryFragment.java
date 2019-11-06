@@ -1,6 +1,7 @@
 package com.dentasoft.testsend;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +23,10 @@ import java.util.*;
 import com.dentasoft.testsend.adapters.ListViewAdapter;
 import com.dentasoft.testsend.dialog.SearchHistoryDialog;
 import com.dentasoft.testsend.dialog.SearchNumberDialog;
+import com.dentasoft.testsend.util.Mapper;
+
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class HistoryFragment extends Fragment {
     //  private ArrayList<HashMap> list;
@@ -50,7 +55,7 @@ public class HistoryFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_history, container, false);
-
+        ButterKnife.bind(this,v);
         getActivity().setTitle("History");
         LinearLayout tb_container = (LinearLayout)inflater.inflate(R.layout.toolbar_history_normal,container,false);
         smsView = v.findViewById(R.id.smsListView);
@@ -81,17 +86,16 @@ public class HistoryFragment extends Fragment {
     }
 
     private void DownloadMessages(View v) {
-       if (Constants.FtpContent.equals("")) {
+        Constants.FtpContent = "";
            new Thread() {
                @Override
                public void run() {
                    //  InitFTPServerSetting(v);
-                   FtpService service = new FtpService(v,Constants.IP);
-                   Constants.FtpContent = service.fetchText("/test","msg_LOG.txt");
+                   FtpService service = new FtpService(getContext(),Constants.IP);
+                   Constants.FtpContent = service.fetchText(Constants.USER_ID,"msg_LOG.txt");
                }
            }.start();
            while (Constants.FtpContent.equals("")){}
-       }
     }
 
     public void DisplayMessages(View v) {
@@ -109,7 +113,7 @@ public class HistoryFragment extends Fragment {
         ArrayList<String> time = new ArrayList<>();
         try {
             Date from_bound = new SimpleDateFormat("dd/MM/yyyy").parse(from);
-            Date to_bound = new SimpleDateFormat("dd/MM/yyyy").parse(to);
+            Date to_bound = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(to+" 23:59:59");
                 for (int i = 0; i < historyTime.size(); i++) {
                     Date date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(historyTime.get(i));
                     if (date.after(from_bound) && date.before(to_bound)) {
@@ -166,11 +170,26 @@ public class HistoryFragment extends Fragment {
         mToolbar_container.addView(toolbar);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void InitHistoryToolbarOnItemSelected(LinearLayout toolbar,ListViewAdapter adapter) {
+        ImageView share_selected = toolbar.findViewById(R.id.history_share_selected);
 
+
+        share_selected.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<View> selected_views = Constants.viewItems;
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.putExtra(Intent.EXTRA_SUBJECT, "historique");
+                intent.putExtra(Intent.EXTRA_TEXT, Mapper.mapViewsToMessageContent(selected_views,adapter) );
+                intent.setType("message/*");
+                startActivity(intent);
+            }
+        });
     }
+
+
+
+
 
     @Override
     public void onPause() {

@@ -14,6 +14,7 @@ import com.dentasoft.testsend.MainActivity;
 import com.dentasoft.testsend.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListViewAdapter extends BaseAdapter {
     public static int counter = 0;
@@ -26,7 +27,6 @@ public class ListViewAdapter extends BaseAdapter {
     LinearLayout container;
     private LinearLayout history_toolbar;
     private LinearLayout mNormal_toolbar;
-
 
     public ListViewAdapter(HistoryFragment parent,Context context, ArrayList<String> sendNumber, ArrayList<String> sendMessage, ArrayList<String> historyTime) {
         this.parent_view = parent;
@@ -56,10 +56,21 @@ public class ListViewAdapter extends BaseAdapter {
         return 0;
     }
 
-    private class ViewHolder{
-        TextView ph_number;
-        TextView sms_content;
-        TextView history_time;
+    public void deleteSelected() {
+
+    }
+
+    public void unselect() {
+        for (int position: Constants.selected_messages) {
+
+        }
+    }
+
+    public class ViewHolder{
+        public TextView ph_number;
+        public TextView sms_content;
+        public TextView history_time;
+        public TextView history_date;
     }
 
     @Override
@@ -72,8 +83,10 @@ public class ListViewAdapter extends BaseAdapter {
             holder = new ViewHolder();
             holder.ph_number = (TextView) convertView.findViewById(R.id.number_view);
             holder.sms_content = (TextView) convertView.findViewById(R.id.content_view);
+            holder.history_date = convertView.findViewById(R.id.date_view);
             holder.history_time =(TextView)convertView.findViewById(R.id.time_view);
             convertView.setTag(holder);
+
 
         }
         else
@@ -93,8 +106,8 @@ public class ListViewAdapter extends BaseAdapter {
 
         holder.ph_number.setText(sendNumber.get(position));
         holder.sms_content.setText(sendMessage.get(position));
-        holder.history_time.setText(historyTime.get(position));
-        ListViewAdapter adapter = this;
+        holder.history_date.setText(historyTime.get(position).trim().split(" ")[0]);
+        holder.history_time.setText(historyTime.get(position).trim().split(" ")[1]);
         convertView.setClickable(true);
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,16 +119,9 @@ public class ListViewAdapter extends BaseAdapter {
                     v.setBackgroundColor(v.getResources().getColor(position % 2 == 0 ? R.color.alternate_row: R.color.white,null));
                     counter--;
                     Constants.selected_messages.remove(Constants.selected_messages.indexOf(position));
+                    Constants.viewItems.remove(v);
                     if (counter == 0) {
-                        container.removeViewAt(0);
-
-                        mNormal_toolbar.setLayoutParams(new LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.MATCH_PARENT
-                        ));
-                        parent_view.InitHistoryToolbar(mNormal_toolbar,adapter);
-
-                        ((MainActivity)parent_view.getActivity()).InitMenu((Toolbar) mNormal_toolbar.getChildAt(0),adapter);
+                        InitHistoryToolbar();
                     } else {
                        updateToolbarCounter();
                     }
@@ -124,18 +130,11 @@ public class ListViewAdapter extends BaseAdapter {
                     v.setBackgroundColor(v.getResources().getColor( R.color.orange ,null));
                     counter++;
                     Constants.selected_messages.add(position);
+                    Constants.viewItems.add(v);
                     if (counter == 1) {
-                        container.removeViewAt(0);
-                        history_toolbar = (LinearLayout) inflater.inflate(R.layout.toolbar_history_item_selected,null);
-                        history_toolbar.setLayoutParams(new LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.MATCH_PARENT
-                        ));
-                        container.addView(history_toolbar);
-                        updateToolbarCounter();
-                    } else {
-                       updateToolbarCounter();
+                       InitHistoryToolbarOnItemSelected();
                     }
+                    updateToolbarCounter();
                 }
             }
         });
@@ -144,6 +143,28 @@ public class ListViewAdapter extends BaseAdapter {
         return convertView;
     }
 
+    private void InitHistoryToolbarOnItemSelected() {
+        container.removeViewAt(0);
+        history_toolbar = (LinearLayout) inflater.inflate(R.layout.toolbar_history_item_selected,null);
+        history_toolbar.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        ));
+        container.addView(history_toolbar);
+        parent_view.InitHistoryToolbarOnItemSelected(history_toolbar,this);
+    }
+
+    private void InitHistoryToolbar() {
+        container.removeViewAt(0);
+
+        mNormal_toolbar.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        ));
+        parent_view.InitHistoryToolbar(mNormal_toolbar,this);
+
+        ((MainActivity)parent_view.getActivity()).InitMenu((Toolbar) mNormal_toolbar.getChildAt(0),this);
+    }
 
 
     public void updateToolbarCounter() {

@@ -1,42 +1,33 @@
 package com.dentasoft.testsend;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
+
+import com.dentasoft.testsend.tasks.FetchSmsTask;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.List;
 
 public class MyAccountFragment extends Fragment {
 
     private EditText mIdentifier;
     private SharedPreferences.Editor mEditor;
     private SharedPreferences mPreferences;
-
-    public int i = 0;
-    public static int counter_sms = 0;
-    ArrayList<String> sendMessage = new ArrayList<>();
-    ArrayList<String> sendNumber = new ArrayList<>();
-    ArrayList<String> sendTime = new ArrayList<>();
 
     public MyAccountFragment(){}
 
@@ -55,6 +46,7 @@ public class MyAccountFragment extends Fragment {
         return v;
     }
 
+
     private void Init(View v) {
         Button save_button = v.findViewById(R.id.my_account_save_button);
         Button sms_button = v.findViewById(R.id.my_account_sms_button);
@@ -63,11 +55,12 @@ public class MyAccountFragment extends Fragment {
         mEditor = mPreferences.edit();
         mIdentifier = v.findViewById(R.id.my_account_edit_identifier);
 
-
         save_button.setOnClickListener(v1 -> {
             String id = mIdentifier.getText().toString();
             if (!id.equals("")) {
-                mEditor.putString("user_my_account_identifier",id).commit();
+                mEditor.putString("ftp_user_id",id).commit();
+                Constants.USER_ID = id;
+                ((MainActivity)getActivity()).NavigateToHome();
             } else {
                 Toast.makeText(v1.getContext(), "No identifier is entered!", Toast.LENGTH_SHORT).show();
             }
@@ -80,8 +73,8 @@ public class MyAccountFragment extends Fragment {
             public void run() {
                     //  InitFTPServerSetting(v);
                     System.out.println("Enter send SMS thread!");
-                    FtpService service = new FtpService(v,Constants.IP);
-                    Constants.SendFiles = service.fetchSMSToSend("/test");
+                    FtpService service = new FtpService(getContext(),Constants.IP);
+                    Constants.SendFiles = service.fetchSMSToSend(Constants.USER_ID);
                     //add
                     Constants.SendContent = new ArrayList<>();
 
@@ -92,22 +85,20 @@ public class MyAccountFragment extends Fragment {
         new Thread() {
             @Override
             public void run() {
-                FtpService service = new FtpService(v,Constants.IP);
+                FtpService service = new FtpService(getContext(),Constants.IP);
                 Constants.SendContent = new ArrayList<>();
                 for (String file: Constants.SendFiles) {
                     //System.out.println("Fetched file name !!: "+file);
-                    Constants.SMSContent = service.fetchSMSText("/test",file);
+                    Constants.SMSContent = service.fetchSMSText(Constants.USER_ID,file);
                     System.out.println("SendFiles:  "+ Constants.SMSContent);
                     Constants.SendContent.add(Constants.SMSContent);
                 }
             }
             }.start();
-//        while (Constants.SendContent == null){}
-//        while (Constants.SendContent.size()!=5){}
+
         sms_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("onClick", "button_Send clicked send All SMS");
                 try {
                     sendMessage(v);
                 } catch (IOException e) {
@@ -118,52 +109,31 @@ public class MyAccountFragment extends Fragment {
     }
 
     private void DisplaySavedValues(View v) {
-        if (!mPreferences.getString("user_my_account_identifier","").equals("")) {
-
-            mIdentifier.setText(mPreferences.getString("user_my_account_identifier",""));
-        }
+        mIdentifier.setText(mPreferences.getString("ftp_user_id",""));
     }
 
     public void sendMessage(View v) throws IOException {
+       try {
+           List<String> fileNames = new FetchSmsTask(null).execute().get();
+           for (String fileName: fileNames) {
+               FtpService ftp = new FtpService(getContext(), Constants.IP);
+               final String[] content = new String[]{""};
+               new Thread(new Runnable() {
+                   @Override
+                   public void run() {
+                       content[0] = ftp.fetchText(Constants.USER_ID, fileName, true);
 
+                   }
+               }).start();
+               while (content[0].equals("")) {
+               }
+               new SmsService().sendMessage(content[0]);
+               Thread.sleep(Constants.SEND_SMS_INTERVAL * 1000);
+           }
+       } catch (Exception e) {
+               e.printStackTrace();
+           }
 
-        for (String line:Constants.SendContent)
-        {
-            String[] s = line.split("=");
-            String[] ss = s[0].split("\"");
-            String[] contentandtime = s[1].split("->");
-
-            sendNumber.add(ss[ss.length-1]);
-            sendMessage.add(contentandtime[0]);
-            Date currentTime = Calendar.getInstance().getTime();
-            sendTime.add(String.valueOf(currentTime));
-
-            System.out.println("Message part: "+ contentandtime[0]);
-            System.out.println("Send to this number: "+ss[ss.length-1]);
-            System.out.println("Send time: "+ String.valueOf(currentTime));
-
-            try {
-                SmsManager smsManager = SmsManager.getDefault();
-                System.out.println();
-                smsManager.sendTextMessage(ss[ss.length-1],null,contentandtime[0],null,null);
-                Toast toast = Toast.makeText(getContext(),"Sms sent!!!",Toast.LENGTH_LONG);
-                toast.show();
-
-            }catch (Exception e){
-                Toast.makeText(getContext(),"SMS sent failed, please try again!!", Toast.LENGTH_LONG).show();
-                e.printStackTrace();
-            }
-
-            if (i == 10) {break;}
-            if (counter_sms==3){
-                Log.e("Notification", "Reach 8000 sms limitation, please change SIM card.");
-                counter_sms = 0;
-                break;
-            }
-
-            i++;
-            counter_sms++;
-        }
     }
 }
 

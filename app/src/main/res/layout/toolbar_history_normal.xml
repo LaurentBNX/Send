@@ -26,9 +26,9 @@
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
                android:src="@drawable/ic_search"
-               android:scaleX="1.5"
-               android:scaleY="1.5"
-                android:layout_marginTop="16dp"
+               android:scaleX="1.2"
+               android:scaleY="1.2"
+               android:layout_marginTop="16dp"
                android:layout_marginLeft="12dp"
                android:layout_marginRight="25dp"
 
@@ -40,8 +40,8 @@
                android:layout_height="wrap_content"
                android:layout_marginLeft="30dp"
                android:src="@drawable/ic_phone"
-               android:scaleX="1.5"
-               android:scaleY="1.5"
+               android:scaleX="1.2"
+               android:scaleY="1.2"
                android:layout_marginTop="16dp"
 
                />

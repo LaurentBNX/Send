@@ -14,17 +14,21 @@ public class Constants {
             {R.drawable.ic_computer,R.string.project_in_dev}
 
     };
-            public static final String IP = "193.70.45.74";
-            public static final String userName = "sms@soft4all.be";
-            public static final String passWord = "@P_r6CZ#SQ*d";
-
-            public static String time_slot = "";
-            public static String IP_edit = "";
-            public static String userName_edit = "";
-            public static String passWord_edit = "";
 
 
-            public static final String ABOUT_RESOURCES_PATH = "/_webService_/about/images";
+    //FTP constants
+            public static String IP = "";
+            public static String USERNAME = "";
+            public static String PASSWORD = "";
+            //@P_r6CZ#SQ*d
+            public static int TIME_SLOT = 1;
+            public static int SEND_SMS_INTERVAL = 1;
+            public static String USER_ID = "";
+            public static List<View> viewItems = new ArrayList<>();
+
+
+
+        public static final String ABOUT_RESOURCES_PATH = "/_webService_/about/images";
             public static final String ABOUT_BACKGROUND_FILE = "backgroud.jpg";
 
             public static final String HOME_SLIDER_PATH = "/_webService_/slider";
@@ -39,15 +43,12 @@ public class Constants {
 
             public static Bitmap about_image = null;
             public static Bitmap[] slider_images = null;
-            public static String fetched = "";
             public static Bitmap nav_header = null;
 
             public static String FtpContent = "";
             public static String SMSContent = "";
             public static List<String> SendFiles = null;
             public static List<String> SendContent = null;
-            public static final String FIRST_COLUMN = "NUMBER";
-            public static final String SECOND_COLUMN = "SMS CONTENT";
 
             public static List<Integer> selected_messages = new ArrayList<>();
 

@@ -1,6 +1,7 @@
 package com.dentasoft.testsend;
 
 
+import android.app.Notification;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,7 +14,7 @@ import android.widget.*;
 import androidx.fragment.app.Fragment;
 
 public class SettingsFragment extends Fragment {
-    private EditText TimeSlot,IP,PassWord,UserName;
+    private EditText TimeSlot,IP,PassWord,UserName,SmsInterval;
     private Button save_setting;
     private Switch autoSend;
     private RadioButton french_button, dutch_button, english_button;
@@ -44,6 +45,7 @@ public class SettingsFragment extends Fragment {
         IP = (EditText) v.findViewById(R.id.edit_IP_address);
         UserName = (EditText)v.findViewById(R.id.edit_username);
         PassWord = (EditText)v.findViewById(R.id.edit_password);
+        SmsInterval = v.findViewById(R.id.edit_send_sms_interval);
         final RadioGroup rg = (RadioGroup)v.findViewById(R.id.rg_button);
         save_setting = (Button)v.findViewById(R.id.save_setting_button);
 
@@ -60,41 +62,50 @@ public class SettingsFragment extends Fragment {
         if (preferences.getInt("Language",0)==2131230725) french_button.setChecked(true);
         if (preferences.getInt("Language",0)==2131230722) dutch_button.setChecked(true);
 
-        Constants.time_slot = preferences.getString("TimeSlot", "");
-        Constants.IP_edit = preferences.getString("IPAddress","");
-        Constants.userName_edit = preferences.getString("UserName","");
-        Constants.passWord_edit = preferences.getString("PassWord","");
 
-        TimeSlot.setText(preferences.getString("TimeSlot",""));
-        IP.setText(preferences.getString("IPAddress",""));
-        UserName.setText(preferences.getString("UserName",""));
-        PassWord.setText(preferences.getString("PassWord",""));
+        TimeSlot.setText(Constants.TIME_SLOT+"");
+        IP.setText(Constants.IP);
+        UserName.setText(Constants.USERNAME);
+        PassWord.setText(Constants.PASSWORD);
+        SmsInterval.setText(Constants.SEND_SMS_INTERVAL+"");
 
 
         save_setting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.e("onClick", "user setting saved");
-                Boolean sendAuto;
                 Boolean switchState = autoSend.isChecked();
+                boolean switchToSmsServer = !preferences.getBoolean("autoSend",false) && switchState;
+                boolean switchToManual = preferences.getBoolean("autoSend",false) && !switchState;
                 editor.putBoolean("autoSend",switchState).commit();
                 editor.putInt("Language",rg.getCheckedRadioButtonId()).commit();
                 //add
-                editor.putString("TimeSlot",TimeSlot.getText().toString()).commit();
-                editor.putString("IPAddress",IP.getText().toString()).commit();
-                editor.putString("UserName",UserName.getText().toString()).commit();
-                editor.putString("PassWord",PassWord.getText().toString()).commit();
-                Constants.time_slot = preferences.getString("TimeSlot", "");
-                Constants.IP_edit = preferences.getString("IPAddress","");
-                Constants.userName_edit = preferences.getString("UserName","");
-                Constants.passWord_edit = preferences.getString("PassWord","");
+                try {
+                    editor.putInt("auto_sms_timeslot",Integer.parseInt(TimeSlot.getText().toString())).commit();
+                    editor.putInt("manual_sms_timeslot",Integer.parseInt(SmsInterval.getText().toString())).commit();
+                } catch (Exception e) {
+                    Toast.makeText(getContext(),"Please fill in a number as timeslot!",Toast.LENGTH_SHORT).show();
+                }
 
-                System.out.println(rg.getCheckedRadioButtonId());
-                Boolean auto = preferences.getBoolean("autoSend",false);
-                int language = preferences.getInt("Language",0);
-                System.out.println(auto+"  "+language);
-                System.out.println("Saved IP: "+Constants.IP_edit + "  Saved User Name:  "+Constants.userName_edit+"  Saved Password:  "+Constants.passWord_edit);
-                System.out.println("Saved time slot: "+ Constants.time_slot);
+                editor.putString("ftp_ip",IP.getText().toString()).commit();
+                editor.putString("ftp_username",UserName.getText().toString()).commit();
+                editor.putString("ftp_password",PassWord.getText().toString()).commit();
+                Constants.SEND_SMS_INTERVAL = preferences.getInt("manual_sms_timeslot",1);
+                Constants.TIME_SLOT = preferences.getInt("auto_sms_timeslot", 0);
+                Constants.IP = preferences.getString("ftp_ip","");
+                Constants.USERNAME = preferences.getString("ftp_username","");
+                Constants.PASSWORD = preferences.getString("ftp_password","");
+                Constants.SEND_SMS_INTERVAL = preferences.getInt("manual_sms_timeslot",1);
+               if (switchToSmsServer) {
+                   Toast.makeText(getContext(),"SMS server launched!",Toast.LENGTH_LONG).show();
+                   ((MainActivity)getActivity()).InitAutomaticSmsService();
+
+               }
+               if (switchToManual) {
+                   Toast.makeText(getContext(),"SMS server stopped!",Toast.LENGTH_LONG).show();
+                   ((MainActivity)getActivity()).stopAutomaticService();
+               }
+                ((MainActivity)getActivity()).NavigateToHome();
             }
         });
         return v;

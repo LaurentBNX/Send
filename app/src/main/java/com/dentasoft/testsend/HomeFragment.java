@@ -37,7 +37,7 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home,container,false);
     getActivity().setTitle("Home");
-    InitSliderImages(v);
+  if (Constants.slider_images != null) {  InitSliderImages(v);}
         return v;
     }
 

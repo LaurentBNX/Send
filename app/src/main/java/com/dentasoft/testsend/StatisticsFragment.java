@@ -15,9 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.dentasoft.testsend.Constants;
-import com.dentasoft.testsend.FtpService;
-import com.dentasoft.testsend.R;
 import com.dentasoft.testsend.formatter.DateXAxisFormatter;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -171,10 +168,9 @@ public class StatisticsFragment extends Fragment {
 
     private void DownloadMessageData(View v) {
         TextView txt_amount_of_sms = v.findViewById(R.id.statistics_txt_amount_of_sms);
-        if (Constants.FtpContent.equals("")) {
-            new Thread(() -> {   FtpService ftp = new FtpService(v,Constants.IP);
-                Constants.FtpContent = ftp.fetchText("/test","msg_LOG.txt");}).start();
-        }
+        Constants.FtpContent = "";
+            new Thread(() -> {   FtpService ftp = new FtpService(getContext(),Constants.IP);
+                Constants.FtpContent = ftp.fetchText(Constants.USER_ID,"msg_LOG.txt");}).start();
         while (Constants.FtpContent.equals("")){}
 
         Scanner data= new Scanner(Constants.FtpContent);
@@ -269,6 +265,7 @@ public class StatisticsFragment extends Fragment {
         BarData data = new BarData(dataSet);
         data.setBarWidth(0.85f);
         mChart.setData(data);
+        mChart.setPinchZoom(false);
         mChart.invalidate();
     };
 

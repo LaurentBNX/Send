@@ -15,6 +15,8 @@ import org.apache.commons.net.ftp.FTPReply;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,15 +24,14 @@ public class FtpService {
     private String server;
     private String user;
     private String password;
-    private View view;
+    private Context context;
 
 
-    public FtpService(View view, String server) {
-
-        this.view = view;
+    public FtpService(Context context, String server) {
+        this.context = context;
         this.server = server;
-        this.user = Constants.userName_edit;
-        this.password = Constants.passWord_edit;
+        this.user = Constants.USERNAME;
+        this.password = Constants.PASSWORD;
     }
     public String fetchText(String filePath, String fileName) {
         return this.fetchText(filePath,fileName,false);
@@ -42,8 +43,6 @@ public class FtpService {
             client.connect(server);
             // Try to login and return the respective boolean value
             boolean login = client.login(user, password);
-            if (login) System.out.println("Login successful!");
-            else System.out.println("Login failed");
 
             int replyCode = client.getReplyCode();
             if (!FTPReply.isPositiveCompletion(replyCode)) {
@@ -175,8 +174,7 @@ public class FtpService {
             FTPFile[] files = client.listFiles(filePath);
             for (FTPFile file: files) {
                 String fileName = file.getName();
-               // if (fileName.endsWith(".txt") && !fileName.contains("LOG")) {
-                    if (fileName.endsWith(".txt") && fileName.contains("msg291")&& !fileName.contains("LOG")) {
+                    if (fileName.endsWith(".txt") && !fileName.contains("LOG")) {
                         result.add(fileName);
                     System.out.println("Fetched file name:  " + fileName);
                 }
@@ -197,6 +195,7 @@ public class FtpService {
         }
         return null;
     }
+
 
     public String fetchSMSText(String filePath, String fileName) {
         String fullFileName = filePath + "/" + fileName;
@@ -228,7 +227,8 @@ public class FtpService {
             }
             bInf.close();
             client.deleteFile(fullFileName);
-
+            client.logout();
+            client.disconnect();
             return fileContent;
         } catch (SocketException e) {
             e.printStackTrace();
@@ -241,5 +241,6 @@ public class FtpService {
         }
         return "";
     }
+
 
 }
